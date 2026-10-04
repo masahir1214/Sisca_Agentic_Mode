@@ -17,7 +17,6 @@ services:
       - ./uploads:/app/uploads
       - ./static/outputs:/app/static/outputs
       - ./agent_scripts:/app/agent_scripts 
-      - ./api_key.txt:/app/api_key.txt:ro
     deploy:
       resources:
         limits:

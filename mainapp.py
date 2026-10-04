@@ -29,6 +29,9 @@ import resend
 from datetime import date, datetime, timedelta
 import threading
 import time
+import subprocess
+import csv
+from urllib.parse import quote_plus
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -50,7 +53,7 @@ print("Starting Sisca AI Server...")
 
 pending_otps = {}
 app = Flask(__name__)
-app.secret_key = "sisca_ai_super_secret"
+app.secret_key = os.environ.get("SECRET_KEY", "sisca_ai_super_secret")
 CORS(app)
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 chat_histories = {}
@@ -98,6 +101,15 @@ def init_db():
                   subject TEXT, 
                   body TEXT, 
                   send_time TEXT)""")
+
+    # Daily usage limits (guests by IP, logged-in users by email) - survive restarts/redeploys/multi-workers
+    c.execute("""CREATE TABLE IF NOT EXISTS daily_usage
+                 (usage_key TEXT,
+                  usage_date TEXT,
+                  general_count INTEGER DEFAULT 0,
+                  agent_count INTEGER DEFAULT 0,
+                  PRIMARY KEY (usage_key, usage_date))""")
+    c.execute("DELETE FROM daily_usage WHERE usage_date < %s", (str(date.today() - timedelta(days=7)),))
     conn.commit()
     conn.close()
 
@@ -237,10 +249,8 @@ def search_google(query: str):
     return f"System: Requesting search for {query}"
 
 # NAYA FIX: Smart Sender Routing (Sisca AI vs User's Gmail)
-def send_email(to_email: str, subject: str, body: str, chart_image_url: str = ""):
+def _deliver_email(user_email, to_email: str, subject: str, body: str, chart_image_url: str = ""):
     try:
-        data = request.get_json() or {}
-        user_email = data.get("user_email")
         if not user_email: return "System Notification: Tell the user they must be logged in."
 
         # Smart Check: Is the user sending the email to themselves?
@@ -308,6 +318,14 @@ def send_email(to_email: str, subject: str, body: str, chart_image_url: str = ""
             
     except Exception as e:
         return f"System Notification: Email failed to send. Error: {e}."
+
+def send_email(to_email: str, subject: str, body: str, chart_image_url: str = ""):
+    # AI tool wrapper (same signature as before): reads the logged-in user from the HTTP request.
+    try:
+        data = request.get_json() or {}
+    except Exception as e:
+        return f"System Notification: Email failed to send. Error: {e}."
+    return _deliver_email(data.get("user_email"), to_email, subject, body, chart_image_url)
 
 # --- NAYA TOOL: Schedule Email ---
 def schedule_email(to_email: str, subject: str, body: str, scheduled_time: str):
@@ -388,14 +406,8 @@ def background_email_scheduler():
 
             for email_data in emails_to_send:
                 print(f"Sending scheduled email to {email_data['to_email']}...")
-                # Use the existing send_email function, but mock the request object
-                mock_request_data = {"user_email": email_data['user_email']}
-                original_get_json = request.get_json
-                request.get_json = lambda: mock_request_data
-                
-                send_email(email_data['to_email'], email_data['subject'], email_data['body'])
-                
-                request.get_json = original_get_json
+                # No Flask request exists in this thread, so call the worker directly
+                _deliver_email(email_data['user_email'], email_data['to_email'], email_data['subject'], email_data['body'])
 
                 c.execute("DELETE FROM scheduled_emails WHERE id = %s", (email_data['id'],))
                 conn.commit()
@@ -427,7 +439,6 @@ TOOL_MAP = {
 # AUTONOMOUS BROWSER AGENT (ENHANCED RESEARCHER)
 # ================================
 def execute_browser_agent(topic_name, api_key):
-    import subprocess
     print(f"Executing Visual Engine Sandbox Agent for query target: {topic_name}")
     try:
         # --- NAYA FIX: Completely wipe the Chrome profile to prevent "Profile Error" and Multi-tab restores ---
@@ -440,7 +451,7 @@ def execute_browser_agent(topic_name, api_key):
         # Command setup directing workflow execution to Docker container sandbox
         command = [
             "docker", "exec", "sisca_agent_sandbox",
-            "python", "/app/app/agent_scripts/researcher.py" if os.path.exists("/app/app") else "/app/agent_scripts/researcher.py",
+            "python", "/app/agent_scripts/researcher.py",
             topic_name, api_key
         ]
         
@@ -594,29 +605,22 @@ def handle_tool_call(fc, chat, api_key):
 
     if fc.name == "search_google":
         query = args.get("query", "").strip()
-        if not query:
-            return {"action": "speak", "response": "Search query missing."}
-        url = f"[https://www.google.com/search?q=](https://www.google.com/search?q=){query}"
-        return {
-            "action": "open_url",
-            "url": url,
-            "response": f"Searching for {query}...",
-        }
-
-    elif fc.name == "search_google":
-        query = args.get("query", "").strip()
-        
-        if not query:
-            return {"action": "speak", "response": "Search query missing."}
-            
-        url = f"https://www.google.com/search?q={query}"
-        
-        return {
-            "action": "open_url",
-            "url": url,
-            "response": f"Searching for {query}...",
-        }
-    # ---------------------------------------
+        if query:
+            ret = {
+                "action": "open_url",
+                "url": f"https://www.google.com/search?q={quote_plus(query)}",
+                "response": f"Searching for {query}...",
+            }
+        else:
+            ret = {"action": "speak", "response": "Search query missing."}
+        # Every function_call in Gemini history must be followed by a function_response,
+        # otherwise the NEXT message of this user fails with a 400 error.
+        try:
+            chat.send_message(types.Part.from_function_response(
+                name=fc.name, response={"result": ret["response"]}))
+        except Exception:
+            pass
+        return ret
 
     try:
         func = TOOL_MAP.get(fc.name)
@@ -652,9 +656,6 @@ def handle_tool_call(fc, chat, api_key):
     }
 
 def execute_data_interpreter(query, filename):
-    import subprocess
-    import time
-    import csv # NAYA: CSV ke headers AI ko batane k liye
     
     if not available_keys:
         return "System Error: No API keys available for Data Sandbox.", None
@@ -769,115 +770,8 @@ def execute_data_interpreter(query, filename):
         
     except Exception as e:
         return f"System Thread Failure: {str(e)}", None
-    
-    if not available_keys:
-        return "System Error: No API keys available for Data Sandbox.", None
-
-    # NAYA FIX: Har execution ki ek unique ID hogi taake 2 users ka data aapas mein clash (mix) na ho
-    session_id = str(uuid.uuid4())[:8]
-    
-    # Paths strictly mapped to Docker's internal volumes
-    file_path = f"/app/uploads/{filename}"
-    output_chart_name = f"chart_{session_id}.png"
-    output_chart = f"/app/static/outputs/{output_chart_name}"
-    
-    prompt = f"""You are an Expert Data Analyst. Write raw Python code to analyze the data file at '{file_path}'.
-    User Query: {query}
-    
-    CRITICAL REQUIREMENTS:
-    1. Use pandas to read the file.
-    2. Use matplotlib.pyplot to create the chart.
-    3. You MUST save the generated chart exactly to '{output_chart}'. Do NOT use plt.show().
-    4. Print a concise, analytical text summary of the findings using print().
-    5. Output ONLY valid, executable Python code. NO markdown formatting. NO explanations."""
-    
-    try:
-        code = None
-        last_error = "Unknown Error"
-        num_keys = len(available_keys)
-        start_index = random.randint(0, num_keys - 1)
-
-        # --- NAYA FIX 1: Try Gemini 2.5 Pro with Key Rotation ---
-        for i in range(num_keys):
-            idx = (start_index + i) % num_keys
-            key = available_keys[idx]
-
-            if time.time() < key_cooldowns.get(key, 0): continue
-
-            try:
-                client = create_client(key)
-                response = client.models.generate_content(
-                    model='gemini-pro-latest',
-                    contents=prompt,
-                )
-                code = response.text.strip()
-                break # Success! Loop se bahar aayen
-            except Exception as e:
-                last_error = str(e).lower()
-                if "429" in last_error or "resource_exhausted" in last_error:
-                    key_cooldowns[key] = time.time() + 15 # Key ko cooldown par dalen
-                continue # Agli key try karein
-                
-        # --- NAYA FIX 2: Fallback to Gemini 2.5 Flash if Pro fails on all keys ---
-        if not code:
-            for i in range(num_keys):
-                idx = (start_index + i) % num_keys
-                key = available_keys[idx]
-                
-                if time.time() < key_cooldowns.get(key, 0): continue
-                
-                try:
-                    client = create_client(key)
-                    response = client.models.generate_content(
-                        model='gemini-flash-latest', # Flash par try karein
-                        contents=prompt,
-                    )
-                    code = response.text.strip()
-                    break
-                except Exception as e:
-                    last_error = str(e)
-                    continue
-                    
-        if not code:
-            return f"System Thread Failure: Code generation failed across all keys and models. Last Error: {last_error}", None
-
-        # NAYA FIX: Bulletproof Regex jo har qisam ka markdown code block clean kar degi (```python, ```py, ya simple ```)
-        code = re.sub(r"^```(?:python|py)?\n", "", code, flags=re.MULTILINE | re.IGNORECASE)
-        code = re.sub(r"```$", "", code, flags=re.MULTILINE).strip()
-            
-        # Save script to the shared agent_scripts directory with unique name
-        script_name = f"data_interpreter_{session_id}.py"
-        script_path = os.path.join(BASE_DIR, "agent_scripts", script_name)
-        with open(script_path, "w", encoding="utf-8") as f:
-            f.write(code)
-            
-        # Execute INSIDE the secure Docker Sandbox
-        cmd = ["docker", "exec", "sisca_agent_sandbox", "python", f"/app/agent_scripts/{script_name}"]
-        process = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-        
-        # Clean up local Python script after execution
-        if os.path.exists(script_path):
-            os.remove(script_path)
-        
-        if process.returncode != 0:
-            return f"Code Execution Error in Sandbox:\n{process.stderr}", None
-        
-        # Check karein agar Sandbox ne sach mein Chart banaya hai ya sirf text report di hai
-        chart_url = None
-        if os.path.exists(os.path.join(OUTPUTS_DIR, output_chart_name)):
-            chart_url = f"/static/outputs/{output_chart_name}?t={int(time.time())}"
-        
-        summary = process.stdout.strip()
-        if not summary and not chart_url:
-            summary = "Analysis complete, but the agent returned no printable summary or visual chart."
-            
-        return summary, chart_url
-        
-    except Exception as e:
-        return f"System Thread Failure: {str(e)}", None
 
 def process_with_gemini(user_message, image_base64=None, data_file=None, user_email="guest", is_voice=False, is_agent_active=False):
-    global chat_histories 
     
     if user_email not in chat_histories:
         chat_histories[user_email] = []
@@ -1318,7 +1212,6 @@ def reset_password():
 
 @app.route("/api/clear-chat", methods=["POST"])
 def clear_chat_history():
-    global chat_histories
     data = request.get_json() or {}
     user_email = data.get("user_email") or "guest"
     
@@ -1427,50 +1320,6 @@ def login():
     else:
         return jsonify({"error": "Invalid email or password!"}), 401
 
-@app.route("/api/logout", methods=["POST"])
-def logout():
-    # For now, simply clear chat history for the user
-    # In a real app, you'd manage session tokens/cookies
-    data = request.get_json() or {}
-    user_email = data.get("user_email") or "guest"
-    if user_email in chat_histories:
-        del chat_histories[user_email]
-    return jsonify({"success": True, "message": "Logged out successfully."})
-
-@app.route("/api/get-agent-credits", methods=["POST"])
-def get_agent_credits():
-    data = request.get_json() or {}
-    user_email = data.get("user_email")
-    if not user_email: return jsonify({"credits": 0})
-
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute("SELECT agent_credits FROM users WHERE email = %s", (user_email,))
-    row = c.fetchone()
-    conn.close()
-    if row: return jsonify({"credits": row[0]})
-    return jsonify({"credits": 0})
-
-@app.route("/api/deduct-agent-credit", methods=["POST"])
-def deduct_agent_credit():
-    data = request.get_json() or {}
-    user_email = data.get("user_email")
-    if not user_email: return jsonify({"success": False, "message": "User email required."}), 400
-
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute("SELECT agent_credits FROM users WHERE email = %s", (user_email,))
-    row = c.fetchone()
-    if row and row[0] > 0:
-        new_credits = row[0] - 1
-        c.execute("UPDATE users SET agent_credits = %s WHERE email = %s", (new_credits, user_email))
-        conn.commit()
-        conn.close()
-        return jsonify({"success": True, "new_credits": new_credits})
-    conn.close()
-    return jsonify({"success": False, "message": "No credits or user not found."}), 400
-
-
 # ===============================
 # TEXT TO SPEECH (TTS) ENGINE
 # ===============================
@@ -1502,8 +1351,40 @@ def generate_tts_audio(text):
         print(f"TTS Error: {e}")
         return None
 # Route se pehle ek global dictionary bnai IP tracking ke liye
-guest_ip_tracker = {}
-user_agent_tracker = {} # NAYA: Logged-in users ke agent limit track karne ke liye
+_usage_fallback = {}  # sirf tab use hota hai jab DB available na ho
+
+def consume_usage(key, field, limit):
+    """Atomically count one use of `field` ('general_count' or 'agent_count') for `key` today.
+    Returns (allowed, count_now). If the daily limit is already reached nothing is incremented."""
+    if field not in ("general_count", "agent_count"):
+        raise ValueError("bad field")
+    today = str(date.today())
+    conn = None
+    try:
+        conn = get_db_connection()
+        if conn:
+            c = conn.cursor()
+            c.execute(f"""INSERT INTO daily_usage (usage_key, usage_date, {field}) VALUES (%s, %s, 1)
+                          ON CONFLICT (usage_key, usage_date)
+                          DO UPDATE SET {field} = daily_usage.{field} + 1
+                          WHERE daily_usage.{field} < %s
+                          RETURNING {field}""", (key, today, limit))
+            row = c.fetchone()
+            conn.commit()
+            return (True, row[0]) if row else (False, limit)
+    except Exception as e:
+        print(f"Usage limit DB error (falling back to memory): {e}")
+    finally:
+        if conn:
+            try: conn.close()
+            except Exception: pass
+    # Fallback: in-memory (same behaviour as before)
+    k = (key, today, field)
+    n = _usage_fallback.get(k, 0)
+    if n >= limit:
+        return False, n
+    _usage_fallback[k] = n + 1
+    return True, n + 1
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
@@ -1515,7 +1396,6 @@ def chat():
     
     is_voice = data.get("isVoice", False)      
     is_agent_active = data.get("is_agent_active", False)
-    is_visualize_active = data.get("is_visualize_active", False) # NAYA: Frontend Visualize mode
 
     if not user_message:
         return jsonify({"action": "speak", "response": "Please provide a message."}), 400
@@ -1524,40 +1404,31 @@ def chat():
     # RATE LIMITING LOGIC (General & Agent)
     # ==========================================
     warning_message = None
-    today_str = str(date.today())
 
     if user_email == "guest":
         # --- GUEST LIMITS ---
-        user_ip = request.remote_addr
-        
-        if user_ip not in guest_ip_tracker or guest_ip_tracker[user_ip]["date"] != today_str:
-            guest_ip_tracker[user_ip] = {"date": today_str, "count": 0, "agent_count": 0}
-            
-        # NAYA: Check Agent Limit for Guest (Max 3)
+        guest_key = "ip:" + str(request.remote_addr)
+
+        # Check Agent Limit for Guest (Max 3)
         if is_agent_active:
-            if guest_ip_tracker[user_ip].get("agent_count", 0) >= 3:
+            allowed, _ = consume_usage(guest_key, "agent_count", 3)
+            if not allowed:
                 return jsonify({"action": "speak", "response": "Guest Limit Reached: You have used your 3 free Research queries for today. Please **Login** to get 10 daily queries!"})
-            guest_ip_tracker[user_ip]["agent_count"] = guest_ip_tracker[user_ip].get("agent_count", 0) + 1
 
         # Check General Limit (Max 10)
-        if guest_ip_tracker[user_ip]["count"] >= 10:
+        allowed, current_count = consume_usage(guest_key, "general_count", 10)
+        if not allowed:
             return jsonify({"error": "LIMIT_REACHED"}), 403
-            
-        guest_ip_tracker[user_ip]["count"] += 1
-        current_count = guest_ip_tracker[user_ip]["count"]
-        
+
         if current_count == 5:
             warning_message = "You have 5 free messages left for today. Login for unlimited access!"
 
     else:
-        # --- NAYA: LOGGED-IN USER AGENT LIMITS (Max 10) ---
+        # --- LOGGED-IN USER AGENT LIMITS (Max 10 per day) ---
         if is_agent_active:
-            if user_email not in user_agent_tracker or user_agent_tracker[user_email]["date"] != today_str:
-                user_agent_tracker[user_email] = {"date": today_str, "count": 0}
-            
-            if user_agent_tracker[user_email]["count"] >= 10:
+            allowed, _ = consume_usage("user:" + user_email, "agent_count", 10)
+            if not allowed:
                 return jsonify({"action": "speak", "response": "Daily Limit Reached: You have used all 10 Research Mode queries for today. Please try again tomorrow."})
-            user_agent_tracker[user_email]["count"] += 1
 
     # ==========================================
 
@@ -1578,7 +1449,6 @@ def chat():
 
 @app.route("/api/stop-agent", methods=["POST"])
 def stop_agent():
-    import subprocess
     print("System Notification: Signal received to forcefully terminate agent process.")
     try:
         # 1. Container ke andar chalne wali Python script ko forcefully (SIGKILL) kill karein

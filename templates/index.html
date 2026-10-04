@@ -1210,12 +1210,10 @@ const chatForm = document.getElementById('chatForm');
 
             const savedUser = localStorage.getItem('sisca_user');
             let userEmail = null;
-            let userName = null;
             
             if (savedUser) {
                 const userObj = JSON.parse(savedUser);
                 userEmail = userObj.email;
-                userName = `${userObj.first_name} ${userObj.last_name}`;
             }
 
             // --- NAYI LOGIC: Agar Research mode ON he, to Live Screen dikhayen ---
@@ -1243,7 +1241,6 @@ const chatForm = document.getElementById('chatForm');
                         image: imageBase64,
                         data_file: dataFile,
                         user_email: userEmail,
-                        user_name: userName,
                         is_agent_active: isAgentActive,
                         is_visualize_active: isVisualizeModeOn // NAYA FIX: Direct Dashboard button k variable se link kar dia
                     })
