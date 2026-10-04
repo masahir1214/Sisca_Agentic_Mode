@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisca AI - Your Autonomous Assistant</title>
+     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- NAYA: PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisca AI Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div id="mobile-blocker">
+        <img src="/static/logo.png" alt="Sisca AI Logo" style="width: 80px; margin-bottom: 20px;">
+        <h1>Desktop Only Access</h1>
+        <p>Sisca AI is not accessable on mobile. For the full experience, please switch to <strong>Desktop</strong>.</p>
+    </div>
+
+    
+    <div class="background-blur">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+    </div>
+    
+
+    <div class="dashboard-layout">
+        
+        <div class="left-section">
+            <div class="top-panels">
+                
+              <div class="glass-panel auth-panel">
+                    <div class="auth-profile">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    
+                <div class="auth-text" id="currentUserDisplay">Guest Mode</div>
+
+                <div class="auth-panel-actions" id="loggedInActions" style="display: none;">
+                    <button id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+
+                <div class="auth-buttons" id="authButtonsDiv">
+
+                        <button class="auth-btn signup-btn" id="openLoginModal">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                        <button class="auth-btn signup-btn" id="openSignupModal">
+                      <i class="fas fa-user-plus"></i> Sign Up
+                    </button>
+                    </div>
+
+                </div>
+
+                <div class="glass-panel controls-panel">
+
+                   <div class="control-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: center; align-items: end;">
+                        
+                        <!-- NAYA: Unlocked VISUALS Button -->
+                        <div class="control-item" id="visualsBtn" title="Toggle Data Visualization" style="cursor: pointer; opacity: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%;">
+                            <i class="fas fa-toggle-off" style="font-size: 1.7rem; margin-bottom: 5px; transition: all 0.3s;"></i>
+                            <span style="transition: all 0.3s;">VISUALS</span>
+                        </div>
+                        
+                        <div class="control-item" id="connectGmailBtn" style="cursor: pointer; opacity: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%;" title="Connect Gmail">
+                            <i class="fas fa-envelope" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
+                            <span>CONNECT</span>
+                        </div>
+                        
+                        <div class="control-item" id="feedbackBtn" style="cursor: pointer; opacity: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%;">
+                            <i class="fas fa-comment-alt" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
+                            <span>FEEDBACK</span>
+                        </div>
+                        
+                        <div class="control-item" id="howToUseBtn" style="cursor: pointer; opacity: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%;">
+                            <i class="fas fa-question-circle" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
+                            <span>GUIDE</span>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <div class="glass-panel neural-panel">
+                  <div class="energy-core-wrapper" id="energy-core">
+                        <div class="core-layer layer-1"></div>
+                        <div class="core-layer layer-2"></div>
+                        <div class="core-layer layer-3"></div>
+                        <div class="core-center"></div>
+                    </div>
+                    <button type="button" id="talkBtn" class="init-btn" title="Toggle Voice Command">Talk with SISCA</button>
+                </div>
+
+            </div>
+
+            <div class="glass-panel workspace-panel chat-section" style="padding: 0; padding-top: 1rem;">
+                <div class="chat-tabs">
+                    <button class="tab active"><i class="far fa-comment-alt"></i> CHATS</button>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant-message">
+                        <div class="message-avatar">
+                            <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
+                                <img src="/static/logo.png" alt="Sisca AI" draggable="true">
+                            </a>
+                        </div>
+
+                        <div class="message-wrapper">
+                            <div class="message-content">
+                                <p>Hello! How can I assist you today?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="chatForm" class="input-area">
+                    <div class="image-preview-area">
+                        <div id="imagePreviewContainer" style="display: none;">
+                            <img id="imagePreview" src="" alt="Preview">
+                            <button type="button" id="removeImageBtn" title="Remove image">&times;</button>
+                        </div>
+                    </div>
+
+                    <div class="input-container-pill">
+    <input type="file" id="imageInput" accept="image/*, .csv, .xlsx, .json, .txt" style="display: none;">
+    <button type="button" id="attachBtn" class="action-icon" title="Upload Image">
+        <i class="fas fa-paperclip"></i>
+    </button>
+
+    <input type="text" id="messageInput" placeholder="Chat with Sisca AI..." autocomplete="off" required>
+
+    <div class="audio-waveform" id="audioWaveform" style="display: none;">
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="mode-selector-wrapper custom-select-wrapper">
+    <!-- Naya Custom Button -->
+    <div class="mode-selector custom-select-btn" id="customModeBtn">
+        <span id="customModeText">Fast</span>
+    </div>
+    <i class="fas fa-chevron-down dropdown-icon"></i>
+    
+    <!-- Custom Dropdown Menu -->
+    <div class="custom-select-menu" id="customModeMenu">
+        <div class="custom-option selected" data-value="fast">Fast</div>
+        <div class="custom-option" data-value="research">Research</div>
+    </div>
+
+    <!-- Hidden Input: Apka purana JS code is ID se value uthata rahay ga -->
+    <input type="hidden" id="chatModeSelector" value="fast">
+</div>
+
+    <button type="submit" class="send-btn" id="sendBtn" title="Send Message">
+        <i class="fas fa-paper-plane"></i>
+    </button>
+    <!-- NAYA: Stop Button (Jo by default hide rahay ga) -->
+    <button type="button" class="send-btn" id="stopBtn" title="Stop Generation" style="display: none; color: #ef4444;">
+        <i class="fas fa-stop-circle"></i>
+    </button>
+</div>
+                    
+                    <div class="ai-disclaimer">
+                        SISCA AI is in Development phase. <strong>Unexpected Errors</strong> may occur.
+                    </div>
+                </form>
+
+            </div> </div> <div class="glass-panel right-brand-panel" style="position: relative;">
+            
+            <div class="brand-wrapper" id="brandWrapper">
+                <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="display: flex; align-items: center; justify-content: center; text-decoration: none; outline: none; cursor: default;">
+                    <img src="/static/logo.png" alt="Sisca AI Logo" class="brand-logo" draggable="true">
+                </a>
+                <h2>Sisca AI</h2>
+                <h4>YOUR AUTONOMOUS ASSISTANT</h4>
+            </div>
+
+            <div id="rightPanelContent" class="right-panel-content">
+                <button id="closeRightPanel" class="close-panel-btn" title="Close Workspace"><i class="fas fa-times"></i></button>
+                
+                <!-- NAYA: Download PDF Button -->
+                <button id="downloadPdfBtn" class="close-panel-btn" title="Download Report as PDF" style="right: 4.5rem; background: var(--theme-primary); color: white;">
+                    <i class="fas fa-file-pdf"></i>
+                </button>
+
+                <div id="rightPanelText" class="right-panel-text"></div>
+                <!-- NAYA: Data Chart Renderer -->
+                <img id="rightPanelChart" src="" alt="Generated Chart" style="display: none; width: 100%; border-radius: 12px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            </div>
+            <!-- NAYA: Virtual Screen Container (noVNC Iframe) -->
+    <div id="virtualScreenContent" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 1.5rem; overflow: hidden; z-index: 20; background: #1c282d;">
+        <!-- Top Tech Bar -->
+        <div style="background: rgba(0, 96, 100, 0.9); color: white; padding: 6px 15px; font-size: 0.8rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <span><i class="fas fa-desktop" style="margin-right: 5px;"></i> Sisca's PC <span style="font-size: 0.65rem; color:#a5f3fc; margin-left: 5px;">(Live View)</span></span>
+            <div class="typing-dots" style="margin: 0; padding: 0; transform: scale(0.8);"><span></span><span></span><span></span></div>
+        </div>
+        <!-- Iframe jo noVNC server se connect hoga -->
+        <iframe id="vncStreamFrame" src="" style="width: 100%; height: calc(100% - 30px); border: none; opacity: 0.95;"></iframe>
+    </div>
+</div> <!-- right-brand-panel div closing -->
+        </div>
+
+    </div> 
+      
+    
+<!-- =====================================
+         GUEST 10 MESSAGES LIMIT MODAL
+    ====================================== -->
+    <div id="guestLimitModal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <span class="close-btn" onclick="smoothClose(document.getElementById('guestLimitModal'))">&times;</span>
+            
+            <h2 style="color: var(--text-dark); margin-bottom: 0.5rem;">Daily Limit Reached</h2>
+            <p style="color: var(--theme-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
+                You've reached your free limit of 10 messages for today.<br><br>
+                Please <strong>Login</strong> or <strong>Sign Up</strong> to unlock unlimited free conversations!
+            </p>
+            <div style="display: flex; gap: 10px;">
+                <button class="modal-submit-btn" onclick="window.location.href='/auth'" style="flex: 1; margin-top: 0;">Login</button>
+                <button class="modal-submit-btn" onclick="window.location.href='/auth?mode=signup'" style="flex: 1;">Sign Up Free</button>
+            </div>
+        </div>
+    </div>
+
+<!-- =====================================
+         GUEST 5 MESSAGES WARNING MODAL
+    ====================================== -->
+    <div id="guestWarningModal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <span class="close-btn" onclick="smoothClose(document.getElementById('guestWarningModal'))">&times;</span>       
+            <h2 style="color: var(--text-dark); margin-bottom: 0.5rem;">5 Messages Left!</h2>
+            <p style="color: var(--theme-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
+                You have only 5 free messages left for today.<br><br>
+                Please <strong>Login</strong> or <strong>Sign Up</strong> now to unlock unlimited free conversations and save your progress!
+            </p>
+            <div style="display: flex; gap: 10px;">
+                <button class="modal-submit-btn" onclick="window.location.href='/auth'" style="flex: 1; margin-top: 0;">Login</button>
+                <button class="modal-submit-btn" onclick="window.location.href='/auth?mode=signup'" style="flex: 1;">Sign Up Free</button>
+            </div>
+        </div>
+    </div>
+
+
+
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="closeLogin">&times;</span>
+        <h2>Login to Sisca AI</h2>
+        <input type="email" id="loginEmail" placeholder="Email Address" class="auth-input">
+        
+        <div class="password-wrapper">
+            <input type="password" id="loginPassword" placeholder="Password" class="auth-input" style="margin-bottom: 0;">
+            <i class="fas fa-eye toggle-password" id="toggleLoginPassword"></i>
+        </div>
+        
+        <button class="modal-submit-btn" onclick="submitLogin()" style="margin-top: 1rem;">Login</button>
+    </div>
+</div>
+
+<div id="signupModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="closeSignup">&times;</span>
+        <h2>Create Account</h2>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+            <input type="text" id="signupFirstName" placeholder="First Name" class="auth-input" style="margin-bottom: 0;">
+            <input type="text" id="signupLastName" placeholder="Last Name" class="auth-input" style="margin-bottom: 0;">
+        </div>
+        
+        <input type="email" id="signupEmail" placeholder="Email Address" class="auth-input">
+        
+        <div class="password-wrapper">
+            <input type="password" id="signupPassword" placeholder="Create a Password" class="auth-input" style="margin-bottom: 0;">
+            <i class="fas fa-eye toggle-password" id="toggleSignupPassword"></i>
+        </div>
+       <p style="font-size: 0.75rem; color: var(--theme-secondary); margin-bottom: 1rem; margin-top: 0.5rem; text-align: center;">
+    Password must have 1 uppercase, 1 lowercase & 1 number.
+        </p>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+            <input type="text" id="signupOTP" placeholder="Enter 6-digit Code" class="auth-input" maxlength="6" style="margin-bottom: 0; flex: 1;">
+            <button class="init-btn" id="sendOtpBtn" onclick="requestOTP()" style="margin-top: 0; white-space: nowrap; border-radius: 12px;">Send Code</button>
+        </div>
+
+        <button class="modal-submit-btn" onclick="submitSignup()">Sign Up</button>
+    </div>
+</div>
+
+<div id="feedbackModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="closeFeedback">&times;</span>
+        <h2>Anonymous Feedback</h2>
+        <p>Your feedback helps us improve Sisca AI. (No personal data is collected during feedback submission)</p>
+        <textarea id="feedbackText" rows="4" placeholder="Write your feedback here..."></textarea>
+        <button class="modal-submit-btn" onclick="submitFeedback()">Submit Feedback</button>
+    </div>
+</div>
+
+<div id="howToUseModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close-btn" id="closeHowToUse">&times;</span>
+        <h2>How to Use Sisca AI</h2>
+        <ul class="instructions-list" style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+            <li><strong><i class="fas fa-microphone"></i> Voice Command:</strong> Click <strong>Talk with SISCA</strong> and speak your command.</li>
+            <li><strong><i class="fas fa-envelope"></i> Gmail Integration:</strong> Connect your Gmail to let Sisca read, summarize, and send emails for you.</li>
+            <li><strong><i class="fas fa-image"></i> Image Analysis:</strong> Click the paperclip icon to upload an image and ask questions about it.</li>
+            <li><strong><i class="fas fa-globe"></i> Web Access:</strong> Using <strong>Research Mode</strong>, you can browse the web and perform searches in real-time.</li>
+        </ul>
+    </div>
+</div>
+
+<div id="connectModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="closeConnect">&times;</span>
+        <h2>Integration (Beta)</h2>
+        <p style="margin-bottom: 1.5rem; line-height: 1.6; color: var(--theme-secondary); font-size: 0.95rem;">
+            Since Sisca AI is currently in Beta, the Gmail Integration feature is restricted to Test Users.<br><br>
+            To get access, click <strong>'Apply for Test User'</strong> below.<br> Once your request is approved, you can click <strong>'Connect'</strong> button to link your account.
+        </p>
+        
+       <style>
+            /* NAYA: Dono buttons par same Google jaisi CSS lagayen */
+            #actualConnectBtn, #requestTestUserBtn {
+                background: #ffffff;
+                color: #3c4043;
+                border: 1px solid #dadce0;
+                border-radius: 8px;
+                height: 44px; 
+                font-size: 0.95rem;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                transition: background-color 0.2s, box-shadow 0.2s;
+            }
+            #actualConnectBtn:hover:not(:disabled), #requestTestUserBtn:hover:not(:disabled) {
+                background-color: #f8f9fa;
+                box-shadow: 0 1px 3px rgba(60,64,67,0.2);
+            }
+        </style>
+
+        <div style="display: flex; gap: 10px; margin-top: 1rem;">
+            <button id="requestTestUserBtn" style="flex: 1;">
+                Apply for Test User
+            </button>
+            
+            <button id="actualConnectBtn" style="margin-top: 0; flex: 1; height: 44px;">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.66 9.5 24 9.5z"></path>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                    <path fill="none" d="M0 0h48v48H0z"></path>
+                </svg>
+                Connect
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+        // === CUSTOM DROPDOWN LOGIC ===
+document.addEventListener('DOMContentLoaded', () => {
+    const customModeBtn = document.getElementById('customModeBtn');
+    const customModeMenu = document.getElementById('customModeMenu');
+    const customModeText = document.getElementById('customModeText');
+    const hiddenInput = document.getElementById('chatModeSelector');
+    const customOptions = document.querySelectorAll('.custom-option');
+
+    if(customModeBtn && customModeMenu) {
+        // Dropdown toggle karein
+        customModeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            customModeMenu.classList.toggle('show');
+        });
+
+        // Option select karne par
+        customOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const value = option.getAttribute('data-value');
+                const text = option.innerText;
+
+                // UI aur hidden input update karein
+                customModeText.innerText = text;
+                hiddenInput.value = value;
+
+                // Selection highlight change karein
+                customOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+
+                // Menu close karein
+                customModeMenu.classList.remove('show');
+            });
+        });
+
+        // Agar user bahar click kare to menu close ho jaye
+        document.addEventListener('click', (e) => {
+            if (!customModeBtn.contains(e.target) && !customModeMenu.contains(e.target)) {
+                customModeMenu.classList.remove('show');
+            }
+        });
+    }
+});
+
+// ====== CUSTOM NOTIFICATION SYSTEM ======
+        function showNotification(message, type = 'info') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `custom-toast ${type}`;
+            
+            let iconClass = 'fas fa-info-circle';
+            if (type === 'success') iconClass = 'fas fa-check-circle';
+            if (type === 'error') iconClass = 'fas fa-exclamation-circle';
+
+            // Agar message me emoji ho to usay clean kar dega
+            let cleanMessage = message.replace('⚠️ ', '');
+
+            toast.innerHTML = `<i class="${iconClass}"></i> <span>${cleanMessage}</span>`;
+            container.appendChild(toast);
+
+            // 4 seconds ke baad slide-out karke remove ho jayega
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+// === UNIVERSAL MODAL CLOSE ANIMATION ===
+        function smoothClose(modalElement) {
+            if (!modalElement) return;
+            const content = modalElement.querySelector('.modal-content');
+            
+            // 1. Closing animation class lagayen
+            content.classList.add('modal-closing');
+            
+            // 2. 200 miliseconds (0.20s) ka wait karein aur phir hide karein
+            setTimeout(() => {
+                modalElement.style.display = 'none';
+                content.classList.remove('modal-closing'); // Agli dafa khulne ke liye reset
+            }, 155);
+        }
+        // === CLOSE MODAL ON OUTSIDE CLICK ===
+        // Agar user dark background par click karega toh popup band ho jayega
+        window.addEventListener('click', function(event) {
+            // Check karein ke jis jagah click hua hai, kya wo 'modal' (dark overlay) hai?
+            if (event.target.classList.contains('modal')) {
+                smoothClose(event.target);
+            }
+        });
+
+
+        // Default browser alert ko Override kar diya
+        window.alert = function(msg) {
+            let msgStr = String(msg);
+            let type = 'info';
+            let lowerMsg = msgStr.toLowerCase();
+            
+            // AI khud pehchan legi ke message Error ka hai ya Success ka
+            if (lowerMsg.includes('error') || lowerMsg.includes('failed') || lowerMsg.includes('invalid') || lowerMsg.includes('empty') || lowerMsg.includes('please login') || msgStr.includes('⚠️')) {
+                type = 'error';
+            } else if (lowerMsg.includes('success') || lowerMsg.includes('thank you') || lowerMsg.includes('awesome')) {
+                type = 'success';
+            }
+            
+            showNotification(msgStr, type);
+        };
+        // ========================================
+
+// === VISUALS BUTTON TOGGLE LOGIC ===
+const visualsBtn = document.getElementById('visualsBtn');
+let isVisualizeModeOn = false;
+
+if (visualsBtn) {
+    visualsBtn.addEventListener('click', () => {
+        isVisualizeModeOn = !isVisualizeModeOn;
+        const icon = visualsBtn.querySelector('i');
+        
+        if (isVisualizeModeOn) {
+            visualsBtn.classList.add('visuals-active');
+            icon.classList.remove('fa-toggle-off');
+            icon.classList.add('fa-toggle-on');
+        } else {
+            visualsBtn.classList.remove('visuals-active');
+            icon.classList.remove('fa-toggle-on');
+            icon.classList.add('fa-toggle-off');
+        }
+    });
+}
+
+ // ====== PAGE LOAD LOGIC ======
+window.addEventListener('DOMContentLoaded', async () => {
+    const savedUserStr = localStorage.getItem('sisca_user');
+    const authProfileIcon = document.querySelector('.auth-profile');
+    const gmailBtn = document.getElementById('connectGmailBtn');
+    
+    // Icon hamesha show rahega
+    if (gmailBtn) gmailBtn.style.display = 'flex'; 
+
+    if (savedUserStr) {
+        const user = JSON.parse(savedUserStr);
+        document.getElementById('currentUserDisplay').innerText = `${user.first_name} ${user.last_name}`;
+        document.getElementById('authButtonsDiv').style.display = 'none';
+        
+        const loggedInActions = document.getElementById('loggedInActions');
+        if (loggedInActions) loggedInActions.style.display = 'flex';
+        
+        if (authProfileIcon) authProfileIcon.classList.add('logged-in'); 
+        
+        // === NAYA LOGIC: Page load hoty hi Connect Popup ka data ready kar lega ===
+        checkConnectButtonStatus();
+        
+        // NAYA LOGIC: Page load hoty hi direct Database se live check karega
+        try {
+            const response = await fetch('/api/check-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: user.email })
+            });
+            const data = await response.json();
+            
+            // Agar database ne confirm kar diya ke token mojood hai, to button ko Connected kar do
+            if (data.gmail_connected && gmailBtn) {
+                gmailBtn.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i><span style="color: #10b981;">CONNECTED</span>';
+                gmailBtn.classList.add('connected-state');
+                gmailBtn.disabled = true;
+                
+                // Backup ke liye browser ki memory me bhi update kar dein
+                user.gmail_connected = true;
+                localStorage.setItem('sisca_user', JSON.stringify(user));
+            }
+        } catch (e) {
+            console.error("Status fetch failed", e);
+        }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('gmail_connected')) {
+        alert("Awesome! Gmail Connected Successfully. Sisca AI can now send emails for you.");
+        
+        if (savedUserStr) {
+            const user = JSON.parse(savedUserStr);
+            user.gmail_connected = true;
+            localStorage.setItem('sisca_user', JSON.stringify(user));
+            
+            if (gmailBtn) {
+                gmailBtn.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i><span style="color: #10b981;">CONNECTED</span>';
+                gmailBtn.classList.add('connected-state');
+                gmailBtn.disabled = true;
+            }
+        }
+        window.history.replaceState({}, document.title, "/"); 
+    }
+});
+
+// ====== LOGOUT LOGIC ======
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+    
+    // ==========================================
+    // NAYA: Abort any pending requests immediately upon logout
+    // ==========================================
+    if (typeof currentAbortController !== 'undefined' && currentAbortController !== null) {
+        currentAbortController.abort();
+        console.log("Pending request aborted due to logout.");
+    }
+
+    // Frontend se user ka data hata rahe hain
+    localStorage.removeItem('sisca_user');
+
+    document.getElementById('currentUserDisplay').innerText = 'Guest Mode';
+    document.getElementById('authButtonsDiv').style.display = 'flex';
+    
+    const loggedInActions = document.getElementById('loggedInActions');
+    if (loggedInActions) loggedInActions.style.display = 'none';
+    
+    const authProfileIcon = document.querySelector('.auth-profile');
+    if (authProfileIcon) authProfileIcon.classList.remove('logged-in');
+    
+    const gmailBtn = document.getElementById('connectGmailBtn');
+    if (gmailBtn) {
+        gmailBtn.innerHTML = '<i class="fas fa-envelope"></i><span>CONNECT</span>';
+        gmailBtn.classList.remove('connected-state');
+        gmailBtn.disabled = false;
+        gmailBtn.style.display = 'flex'; 
+    }
+
+    // Frontend chatbox ko clear karke default welcome message lagana
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+        chatMessages.innerHTML = `
+            <div class="message assistant-message">
+                <div class="message-avatar">
+                    <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
+                        <img src="/static/logo.png" alt="Sisca AI" draggable="true">
+                    </a>
+                </div>
+                <div class="message-wrapper">
+                    <div class="message-content">
+                        <p>Hello! How can I assist you today?</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    const rightPanelContent = document.getElementById('rightPanelContent');
+    const brandWrapper = document.getElementById('brandWrapper');
+    if (rightPanelContent && rightPanelContent.classList.contains('show')) {
+        rightPanelContent.classList.remove('show');
+        brandWrapper.classList.remove('hide-tech');
+        brandWrapper.classList.add('show-tech');
+    }
+
+    // BUG FIX: Ab yahan user_email ki jagah explicitly "guest" likh diya hai.
+    // Is se logged-in user ki history save rahegi aur sirf guest data clear hoga.
+    try {
+        await fetch('/api/clear-chat', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_email: "guest" }) 
+        });
+    } catch (e) {
+        console.error("Failed to clear backend chat memory.");
+    }
+
+    alert('Logged out successfully!');
+});
+
+
+// ====== CONNECT GMAIL MODAL LOGIC ======
+const connectModal = document.getElementById('connectModal');
+const closeConnect = document.getElementById('closeConnect');
+const actualConnectBtn = document.getElementById('actualConnectBtn');
+const requestTestUserBtn = document.getElementById('requestTestUserBtn');
+
+// NAYA LOGIC: Ab ye direct backend se live status check karega
+async function checkConnectButtonStatus() {
+    const savedUserStr = localStorage.getItem('sisca_user');
+    if (!savedUserStr) return;
+    const savedUser = JSON.parse(savedUserStr);
+    
+    try {
+        const response = await fetch('/api/check-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: savedUser.email })
+        });
+        const data = await response.json();
+        const status = data.test_status; // 0 = New, 1 = Requested, 2 = Approved
+
+        if (status === 2) {
+            // Approved state
+            actualConnectBtn.disabled = false;
+            actualConnectBtn.style.opacity = "1";
+            actualConnectBtn.style.cursor = "pointer";
+            actualConnectBtn.style.pointerEvents = "auto";
+            
+            requestTestUserBtn.innerText = "Added to Test Users";
+            requestTestUserBtn.disabled = false; // Disable tag hata diya
+            requestTestUserBtn.style.pointerEvents = "none"; // NAYA: Hover aur Click bilkul band
+            requestTestUserBtn.style.background = "rgba(16, 185, 129, 0.1)"; 
+            requestTestUserBtn.style.color = "#10b981";
+            requestTestUserBtn.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+        } else if (status === 1) {
+            // Requested / Pending state
+            actualConnectBtn.disabled = true;
+            actualConnectBtn.style.opacity = "0.5";
+            actualConnectBtn.style.cursor = "not-allowed";
+            actualConnectBtn.style.pointerEvents = "none";
+            
+            requestTestUserBtn.innerText = "Request Pending..."; // TEXT CHANGED
+            requestTestUserBtn.disabled = false; // Disable tag hata diya
+            requestTestUserBtn.style.pointerEvents = "none"; // NAYA: Hover aur Click bilkul band
+            requestTestUserBtn.style.background = "rgba(245, 158, 11, 0.1)"; 
+            requestTestUserBtn.style.color = "#f59e0b";
+            requestTestUserBtn.style.border = "1px solid rgba(245, 158, 11, 0.3)";
+        } else {
+            // Normal state
+            actualConnectBtn.disabled = true;
+            actualConnectBtn.style.opacity = "0.5";
+            actualConnectBtn.style.cursor = "not-allowed";
+            actualConnectBtn.style.pointerEvents = "none";
+            
+            // BUG FIX: Normal state mein wapas original design par layein
+            requestTestUserBtn.innerText = "Apply for Test User";
+            requestTestUserBtn.disabled = false;
+            requestTestUserBtn.style.pointerEvents = "auto"; 
+            requestTestUserBtn.style.background = "#ffffff";
+            requestTestUserBtn.style.color = "#3c4043";
+            requestTestUserBtn.style.border = "1px solid #dadce0";
+        }
+    } catch (e) {
+        console.error("Status fetch failed", e);
+    }
+}
+
+// Grid icon par click karne se popup open hoga
+document.getElementById('connectGmailBtn').addEventListener('click', () => {
+    const savedUser = localStorage.getItem('sisca_user');
+    if (!savedUser) {
+        alert("Please Login to access Integration features."); 
+        return;
+    }
+    
+    // Popup fauran open hoga, aur ab buttons pehle se loaded honge!
+    connectModal.style.display = 'flex';
+});
+
+closeConnect.addEventListener('click', () => smoothClose(connectModal));
+
+actualConnectBtn.addEventListener('click', () => {
+    if(actualConnectBtn.disabled) return;
+    const savedUser = JSON.parse(localStorage.getItem('sisca_user'));
+    window.location.href = '/authorize?email=' + encodeURIComponent(savedUser.email);
+});
+
+// Request Button Click Logic
+requestTestUserBtn.addEventListener('click', async () => {
+    const savedUserStr = localStorage.getItem('sisca_user');
+    if (!savedUserStr) return;
+    const savedUser = JSON.parse(savedUserStr);
+    
+    const btn = document.getElementById('requestTestUserBtn');
+    const originalText = btn.innerText;
+    
+    btn.innerText = "Requesting...";
+    btn.style.pointerEvents = "none"; // Request bhejte waqt double click se roko
+
+    try {
+        await fetch('/api/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                text: `TEST USER REQUEST: Please add this email to Google Cloud Test Users list: ${savedUser.email}`,
+                user_email: savedUser.email
+            })
+        });
+        
+        alert("Request sent successfully! As soon as it is approved, you can Connect your Account.");
+        
+        // Fauran Button ko "Requested" state me change kar do
+        btn.innerText = "Request Pending..."; // TEXT CHANGED
+        btn.style.pointerEvents = "none"; // Hover aur click band
+        btn.style.background = "rgba(245, 158, 11, 0.1)"; 
+        btn.style.color = "#f59e0b";
+        btn.style.border = "1px solid rgba(245, 158, 11, 0.3)";
+        
+    } catch (error) {
+        alert("Request failed. Please try again.");
+        btn.innerText = originalText;
+        btn.style.pointerEvents = "auto"; // Agar error aaye toh wapas clickable kar do
+    } 
+});
+
+ // Auth Modals Logic
+const loginModal = document.getElementById('loginModal');
+const signupModal = document.getElementById('signupModal');
+
+// ====== REDIRECT TO AUTH PAGE ======
+document.getElementById('openLoginModal').addEventListener('click', () => {
+    window.location.href = '/auth'; 
+});
+
+document.getElementById('openSignupModal').addEventListener('click', () => {
+    window.location.href = '/auth?mode=signup'; 
+});
+document.getElementById('closeLogin').addEventListener('click', () => smoothClose(loginModal));
+document.getElementById('closeSignup').addEventListener('click', () => smoothClose(signupModal));
+
+// Eye Button Toggle Logic
+function setupPasswordToggle(toggleId, inputId) {
+    const toggleBtn = document.getElementById(toggleId);
+    const passInput = document.getElementById(inputId);
+    
+    toggleBtn.addEventListener('click', function () {
+        const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passInput.setAttribute('type', type);
+        this.classList.toggle('fa-eye-slash'); // Icon change (eye to eye-slash)
+    });
+}
+setupPasswordToggle('toggleSignupPassword', 'signupPassword');
+setupPasswordToggle('toggleLoginPassword', 'loginPassword');
+
+async function requestOTP() {
+    const email = document.getElementById('signupEmail').value;
+    const btn = document.getElementById('sendOtpBtn');
+
+    if (!email) {
+        return alert("Please enter your email address first!");
+    }
+
+    // Button ko loading state mein daalein
+    btn.innerText = "Sending...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+            alert(data.error);
+            btn.innerText = "Send Code";
+            btn.disabled = false;
+        } else {
+            alert(data.message);
+            
+            // --- NAYA: 30 Seconds Timer Logic ---
+            let timeLeft = 30;
+            btn.innerText = `Resend in ${timeLeft}s`;
+            
+            const timerId = setInterval(() => {
+                timeLeft--;
+                btn.innerText = `Resend in ${timeLeft}s`;
+                
+                // Jab timer 0 ho jaye to interval khatam kar dein
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    btn.innerText = "Resend Code";
+                    btn.disabled = false; // Button wapas clickable ho jayega
+                }
+            }, 1000); // 1000 milliseconds = 1 second
+            // ------------------------------------
+        }
+    } catch (error) {
+        alert("Network error while sending OTP.");
+        btn.innerText = "Send Code";
+        btn.disabled = false;
+    }
+}
+
+async function submitSignup() {
+    const firstName = document.getElementById('signupFirstName').value;
+    const lastName = document.getElementById('signupLastName').value;
+    const email = document.getElementById('signupEmail').value;
+    const otp = document.getElementById('signupOTP').value; // OTP Field
+    const pass = document.getElementById('signupPassword').value;
+    
+    if(!firstName || !lastName || !email || !pass || !otp) return alert("Please fill all fields including OTP!");
+
+    const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            first_name: firstName, 
+            last_name: lastName, 
+            email: email, 
+            otp: otp, // Backend ko OTP bheja
+            password: pass 
+        })
+    });
+    const data = await res.json();
+    
+    if(data.error) alert(data.error);
+    else {
+        alert(data.message);
+        signupModal.style.display = 'none';
+        loginModal.style.display = 'flex';
+        // Reset fields
+        document.getElementById('signupOTP').value = "";
+        document.getElementById('sendOtpBtn').innerText = "Send Code";
+        document.getElementById('sendOtpBtn').disabled = false;
+    }
+}
+
+async function submitLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPassword').value;
+
+            if(!email || !pass) return alert("Please fill all fields!");
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password: pass })
+            });
+
+            const data = await res.json();
+            
+            if(data.error) alert(data.error);
+            else {
+                // IMPORTANT: Login hoty hi user ka data browser me save ho jayega aur homepage par redirect ho jayega
+                localStorage.setItem('sisca_user', JSON.stringify({
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    email: data.email
+                }));
+                window.location.href = '/'; 
+            }
+        }
+
+const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const attachBtn = document.getElementById('attachBtn');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const talkBtn = document.getElementById('talkBtn');
+        const audioWaveform = document.getElementById('audioWaveform');
+
+        let selectedImageBase64 = null;
+        let selectedDataFile = null; // NAYA: Data File Tracker
+        
+        window.fillAndSubmit = function(text) {
+            messageInput.value = text;
+            chatForm.dispatchEvent(new Event('submit'));
+        };
+        attachBtn.addEventListener('click', () => { imageInput.click(); });
+        
+        imageInput.addEventListener('change', async function() {
+            const file = this.files[0];
+            if (!file) return;
+            
+            // Image Workflow
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    imagePreviewContainer.style.display = 'block';
+                    selectedImageBase64 = event.target.result.split(',')[1];
+                    messageInput.removeAttribute('required');
+                };
+                reader.readAsDataURL(file);
+            } 
+            // Data Sandbox Workflow
+            else {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                messageInput.value = "Uploading data file...";
+                messageInput.disabled = true;
+                
+                try {
+                    const res = await fetch('/api/upload-data', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (data.success) {
+                        selectedDataFile = data.filename;
+                        messageInput.value = "";
+                        messageInput.disabled = false;
+                        messageInput.placeholder = `Data Loaded: ${file.name}. Ask to visualize...`;
+                        messageInput.removeAttribute('required');
+                        
+                        // Visual cue for file attached
+                        imagePreview.src = "https://cdn-icons-png.flaticon.com/512/326/326031.png"; // CSV/Doc icon
+                        imagePreviewContainer.style.display = 'block';
+                    }
+                } catch (e) {
+                    alert("Data file upload failed!");
+                    messageInput.disabled = false;
+                    messageInput.value = "";
+                }
+            }
+        });
+        
+        removeImageBtn.addEventListener('click', () => {
+            imageInput.value = '';
+            selectedImageBase64 = null;
+            selectedDataFile = null;
+            imagePreviewContainer.style.display = 'none';
+            messageInput.setAttribute('required', 'required');
+            messageInput.placeholder = "Chat with Sisca AI...";
+        });
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isListening = false;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                if (transcript) {
+                    messageInput.value = transcript;
+                    chatForm.dispatchEvent(new Event('submit'));
+                }
+            };
+
+            recognition.onend = () => {
+                if (isListening) {
+                    // Agar 'isListening' ON hai, aur AI farigh hai (na soch rahi hai, na bol rahi hai)
+                    // Toh mic ko wapas zinda kar do
+                    if (currentAbortController === null && currentAudio === null) {
+                        try { recognition.start(); } catch(e) {}
+                    }
+                } else {
+                    // Agar user ne khud 'stop' daba diya tha, toh UI effects hata do
+                    talkBtn.classList.remove('recording');
+                    const audioWaveform = document.getElementById('audioWaveform');
+                    if (audioWaveform) audioWaveform.style.display = 'none';
+                    document.getElementById('energy-core').classList.remove('listening');
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Mic error: ", event.error);
+                if (event.error !== 'no-speech') {
+                    stopMic();
+                }
+            };
+
+            talkBtn.addEventListener('click', () => {
+                if (isListening) stopMic();
+                else startMic();
+            });
+        } else {
+            talkBtn.style.display = 'none';
+        }
+
+        function startMic() {
+            isListening = true;
+            talkBtn.classList.add('recording');
+            audioWaveform.style.display = 'flex';
+            document.getElementById('energy-core').classList.add('listening');
+            if (recognition) recognition.start();
+        }
+
+        function stopMic() {
+            isListening = false;
+            talkBtn.classList.remove('recording');
+            audioWaveform.style.display = 'none';
+            document.getElementById('energy-core').classList.remove('listening');
+            if (recognition) recognition.stop();
+        }
+
+        function formatText(text) {
+            if (!text) return "";
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // ==========================================
+        // 1. GLOBAL STATE MANAGERS (Audio, Typing, Limits)
+        // ==========================================
+        let currentAbortController = null;
+        let currentTypingInterval = null;
+        let currentAudio = null;
+        let stopTypingResolve = null;
+        let stopAudioResolve = null;
+        let isLimitReached = false;
+
+        // ==========================================
+        // 2. UNIVERSAL UNLOCK FUNCTION (Box ko kholna)
+        // ==========================================
+        function unlockUI() {
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const stopBtn = document.getElementById('stopBtn');
+
+            currentAbortController = null; // Agli request aane ke liye rasta saaf karein
+
+            if (!isLimitReached) {
+                if (messageInput) {
+                    messageInput.disabled = false;
+                    messageInput.style.cursor = "text";
+                    messageInput.placeholder = "Chat with Sisca AI...";
+                    messageInput.classList.remove("locked-input");
+                    messageInput.focus();
+                }
+                if (stopBtn) stopBtn.style.display = 'none';
+                if (sendBtn) sendBtn.style.display = 'inline-block';
+                
+                // --- NAYA: Agar Voice mode ON tha, toh ab wapas Mic zinda karein ---
+                if (typeof isListening !== 'undefined' && isListening && typeof recognition !== 'undefined' && recognition) {
+                    try { recognition.start(); } catch(e) {}
+                    const audioWaveform = document.getElementById('audioWaveform');
+                    if (audioWaveform) audioWaveform.style.display = 'flex';
+                    document.getElementById('energy-core').classList.add('listening');
+                }
+
+            } else {
+                if (messageInput) {
+                    messageInput.disabled = true;
+                    messageInput.style.cursor = "default";
+                    messageInput.placeholder = "Daily Limit reached. Please Login to access Unlimited Chats";
+                    messageInput.classList.add("locked-input");
+                }
+                if (stopBtn) stopBtn.style.display = 'none';
+                if (sendBtn) {
+                    sendBtn.style.display = 'inline-block';
+                    sendBtn.disabled = true;
+                    sendBtn.style.cursor = "default";
+                    sendBtn.style.opacity = "0.5";
+                }
+            }
+        }
+
+        // ==========================================
+        // 3. STOP BUTTON LOGIC
+        // ==========================================
+        document.getElementById('stopBtn').addEventListener('click', async () => {
+            if (currentAbortController) currentAbortController.abort();
+            
+            if (currentTypingInterval) {
+                clearInterval(currentTypingInterval);
+                currentTypingInterval = null;
+                if (stopTypingResolve) { stopTypingResolve(); stopTypingResolve = null; }
+            }
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+                if (stopAudioResolve) { stopAudioResolve(); stopAudioResolve = null; }
+            }
+            
+            // --- NAYA: Send hardware signal to Flask to murder the container process ---
+            try {
+                await fetch('/api/stop-agent', { method: 'POST' });
+            } catch (e) {
+                console.error("Failed to send stop signal to backend engine container.", e);
+            }
+
+            // Stream framework cleanly collapse
+            document.getElementById('virtualScreenContent').style.display = 'none';
+            document.getElementById('vncStreamFrame').src = "";
+            
+            // --- BUG FIX: Clear Data Panel AND bring back the Logo cleanly ---
+            const rightPanel = document.getElementById('rightPanelContent');
+            if (rightPanel) {
+                rightPanel.classList.remove('show');
+            }
+            document.getElementById('brandWrapper').classList.remove('hide-tech');
+            document.getElementById('brandWrapper').classList.add('show-tech');
+            
+            unlockUI();
+        });
+
+        // ==========================================
+        // 4. FORM SUBMISSION LOGIC
+        // ==========================================
+        chatForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            if (currentAbortController !== null) return;
+            const message = messageInput.value;
+            const imageBase64 = selectedImageBase64;
+            const dataFile = selectedDataFile; // NAYA FIX: File tracker variable ko assign karein taake JS crash na ho
+            const wasVoiceCommand = isListening;
+            
+            // Ab hidden input se value lenge (Custom Dropdown)
+            const chatMode = document.getElementById('chatModeSelector').value;
+            const isAgentActive = (chatMode === 'research');
+            
+            // NAYA FIX: Agar file attach ho, toh empty message par request rokne ki bajaye aagay janay dein
+            if (!message.trim() && !imageBase64 && !dataFile) return;
+            
+            // AddMessage ab Promise ban gaya hai
+            addMessage(message || `Analyzing data file: ${dataFile}`, 'user', false, imageBase64);
+            
+            messageInput.value = '';
+            removeImageBtn.click();
+            
+            // --- TEMPORARY PAUSE: Mic ko sirf roko, 'isListening' state ko OFF mat karo ---
+            if (isListening && typeof recognition !== 'undefined' && recognition) {
+                recognition.stop();
+                const audioWaveform = document.getElementById('audioWaveform');
+                if (audioWaveform) audioWaveform.style.display = 'none';
+                document.getElementById('energy-core').classList.remove('listening');
+            }
+            
+            showTypingIndicator();
+
+            const sendBtn = document.getElementById('sendBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            if (messageInput) {
+                messageInput.disabled = true;
+                messageInput.placeholder = "Sisca is responding...";
+                messageInput.style.cursor = "default";
+            }
+            if (sendBtn) sendBtn.style.display = 'none';
+            if (stopBtn) stopBtn.style.display = 'inline-block';
+            
+            currentAbortController = new AbortController();
+            const signal = currentAbortController.signal;
+
+            const savedUser = localStorage.getItem('sisca_user');
+            let userEmail = null;
+            let userName = null;
+            
+            if (savedUser) {
+                const userObj = JSON.parse(savedUser);
+                userEmail = userObj.email;
+                userName = `${userObj.first_name} ${userObj.last_name}`;
+            }
+
+            // --- NAYI LOGIC: Agar Research mode ON he, to Live Screen dikhayen ---
+            if (isAgentActive) {
+                const brand = document.getElementById('brandWrapper');
+                brand.classList.remove('show-tech');
+                brand.classList.add('hide-tech'); // Logo hide karein
+                
+                const vsContent = document.getElementById('virtualScreenContent');
+                const vncFrame = document.getElementById('vncStreamFrame');
+                vsContent.style.display = 'block';
+                // Dynamic Hostname fetch karke port 6080 par noVNC connect karein
+                vncFrame.src = `http://${window.location.hostname}:6080/vnc.html?autoconnect=true&resize=scale`;
+            }
+            // ---------------------------------------------------------------------
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: signal,
+                    body: JSON.stringify({
+                        message: message || (dataFile ? "Analyze this data file and generate charts." : "Describe this image"),
+                        isVoice: wasVoiceCommand,
+                        image: imageBase64,
+                        data_file: dataFile,
+                        user_email: userEmail,
+                        user_name: userName,
+                        is_agent_active: isAgentActive,
+                        is_visualize_active: isVisualizeModeOn // NAYA FIX: Direct Dashboard button k variable se link kar dia
+                    })
+                });
+
+                if (response.status === 403) {
+                    removeTypingIndicator();
+                    isLimitReached = true;
+                    const limitModal = document.getElementById('guestLimitModal');
+                    if (limitModal) limitModal.style.display = 'flex';
+                    unlockUI();
+                    return;
+                }
+
+                const data = await response.json();
+                removeTypingIndicator();
+
+                if (data.warning_alert) {
+                    const warningModal = document.getElementById('guestWarningModal');
+                    if (warningModal) warningModal.style.display = 'flex';
+                }
+
+                if (data.error) {
+                    await addMessage(`Error: ${data.error}`, 'assistant', false);
+                    unlockUI();
+                } else {
+                    const lineCount = (data.response.match(/\n/g) || []).length + 1;
+                    
+                    // NAYA: Data Chart Interception
+                    if (data.chart_url) {
+                        const tasks = [];
+                        tasks.push(addMessage("Data Analysis complete. Chart displayed on the workspace.", 'assistant', false));
+                        
+                        // --- BUG FIX: Hide VNC Screen immediately so the chart is visible! ---
+                        document.getElementById('virtualScreenContent').style.display = 'none';
+                        document.getElementById('vncStreamFrame').src = "";
+                        
+                        displayInRightPanel(data.response, data.chart_url);
+                        if (data.audio) tasks.push(playAudio(data.audio));
+                        await Promise.all(tasks);
+                        unlockUI();
+                    } 
+                    else if (lineCount > 5 || data.response.length > 250) {
+                        const tasks = [];
+                        tasks.push(addMessage("Document generated. Displayed on the main workspace.", 'assistant', false));
+                        
+                        // --- BUG FIX: Hide VNC Screen immediately so the document is visible! ---
+                        document.getElementById('virtualScreenContent').style.display = 'none';
+                        document.getElementById('vncStreamFrame').src = "";
+                        
+                        displayInRightPanel(data.response);
+                        
+                        if (data.audio) {
+                            tasks.push(playAudio(data.audio));
+                        }
+                        
+                        if (data.action === 'open_url' && data.url) {
+                            window.open(data.url, '_blank');
+                        }
+                        await Promise.all(tasks);
+                        unlockUI();
+                    }  
+                    else {
+                        const tasks = [];
+                        tasks.push(addMessage(data.response, 'assistant', !wasVoiceCommand));
+                        if (data.audio) {
+                            tasks.push(playAudio(data.audio));
+                        }
+                                                 
+                        if (data.action === 'open_url' && data.url) {
+                            window.open(data.url, '_blank');
+                        }
+                        await Promise.all(tasks);
+                        
+                        // --- BUG FIX: Teardown VNC Sandbox for Short Responses & Prevent Overlap ---
+                        document.getElementById('virtualScreenContent').style.display = 'none';
+                        document.getElementById('vncStreamFrame').src = "";
+                        
+                        const rightPanel = document.getElementById('rightPanelContent');
+                        const brandWrap = document.getElementById('brandWrapper');
+                        
+                        // SMART CHECK: Only show the logo if there is NO data report currently open
+                        if (!rightPanel.classList.contains('show')) {
+                            brandWrap.classList.remove('hide-tech');
+                            brandWrap.classList.add('show-tech');
+                        }
+                        // ---------------------------------------------------------------
+                        
+                        unlockUI();
+                    }
+                }
+            } catch (error) {
+                removeTypingIndicator();
+
+                // --- NAYI LOGIC: Agar error aye tab bhi screen band kar dein ---
+                if (isAgentActive) {
+                    document.getElementById('virtualScreenContent').style.display = 'none';
+                    document.getElementById('vncStreamFrame').src = "";
+                    document.getElementById('brandWrapper').classList.remove('hide-tech');
+                    document.getElementById('brandWrapper').classList.add('show-tech');
+                }
+                // ---------------------------------------------------------------
+
+                if (error.name === 'AbortError') {
+                    await addMessage("<em>You've stopped this response!</em>", "assistant", false);
+                } else {
+                    await addMessage('An error occurred connecting to the server.', 'assistant', false);
+                }
+                unlockUI();
+            }
+        });
+
+        // ==========================================
+        // 5. ASYNC SUPPORTING FUNCTIONS
+        // ==========================================
+        function addMessage(text, sender, isTyping = false, imageBase64 = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            let avatarHTML = '';
+            if (sender === 'assistant') {
+                avatarHTML = `<div class="message-avatar"><a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;"><img src="/static/logo.png" alt="Sisca AI" draggable="true"></a></div>`;
+            }
+            let imageHTML = '';
+            if (imageBase64) {
+                imageHTML = `<img src="data:image/jpeg;base64,${imageBase64}" style="max-width: 250px; border-radius: 12px; margin-bottom: 10px; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
+            }
+            messageDiv.innerHTML = `${avatarHTML}<div class="message-wrapper"><div class="message-content">${imageHTML}<p class="text-container"></p></div></div>`;
+            
+            chatMessages.appendChild(messageDiv);
+            const textContainer = messageDiv.querySelector('.text-container');
+            
+            if (isTyping && text) {
+                return animateTyping(textContainer, text);
+            } else if (text) {
+                textContainer.innerHTML = formatText(text);
+                scrollToBottom();
+                return Promise.resolve();
+            }
+            return Promise.resolve();
+        }
+
+        function animateTyping(element, text) {
+            return new Promise((resolve) => {
+                stopTypingResolve = resolve;
+                element.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+                
+                // NAYA: Fast Chunk/Word-by-word Streaming Effect (ChatGPT style)
+                let words = text.split(' '); // Words/Chunks mein break kar liya
+                let i = 0;
+                let currentText = '';
+                
+                currentTypingInterval = setInterval(() => {
+                    if (i === 0) element.innerHTML = '';
+                    if (i < words.length) {
+                        currentText += words[i] + ' '; // Ek waqt mein pura chunk render hoga
+                        element.innerHTML = formatText(currentText);
+                        i++;
+                        scrollToBottom();
+                    } else {
+                        clearInterval(currentTypingInterval);
+                        currentTypingInterval = null;
+                        if (stopTypingResolve) { stopTypingResolve = null; resolve(); }
+                    }
+                }, 30); // Har chunk ke baad sirf 30ms ka delay (Super Fast)
+            });
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'tempTypingIndicator';
+            typingDiv.className = 'message assistant-message';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">
+                    <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
+                        <img src="/static/logo.png" alt="Sisca AI" draggable="true">
+                    </a>
+                </div>
+                <div class="message-wrapper">
+                    <div class="message-content">
+                        <div class="typing-dots"><span></span><span></span><span></span></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('tempTypingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function playAudio(base64Data) {
+            return new Promise((resolve) => {
+                stopAudioResolve = resolve;
+                currentAudio = new Audio("data:audio/mp3;base64," + base64Data);
+                
+                currentAudio.onended = () => {
+                    currentAudio = null;
+                    if (stopAudioResolve) { stopAudioResolve = null; resolve(); }
+                };
+                currentAudio.onerror = () => {
+                    currentAudio = null;
+                    if (stopAudioResolve) { stopAudioResolve = null; resolve(); }
+                };
+                currentAudio.play().catch((err) => {
+                    console.log("Audio play prevented:", err);
+                    currentAudio = null;
+                    if (stopAudioResolve) { stopAudioResolve = null; resolve(); }
+                });
+            });
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // ====== MODAL LOGIC ======
+const feedbackModal = document.getElementById('feedbackModal');
+const howToUseModal = document.getElementById('howToUseModal');
+const feedbackBtn = document.getElementById('feedbackBtn');
+const howToUseBtn = document.getElementById('howToUseBtn');
+const closeFeedback = document.getElementById('closeFeedback');
+const closeHowToUse = document.getElementById('closeHowToUse');
+
+// Open Modals
+feedbackBtn.addEventListener('click', () => feedbackModal.style.display = 'flex');
+howToUseBtn.addEventListener('click', () => howToUseModal.style.display = 'flex');
+
+// NAYA: Disclaimer wale 'FEEDBACK' text par click karne se bhi popup khulega
+const disclaimerFeedbackBtn = document.getElementById('disclaimerFeedbackBtn');
+if (disclaimerFeedbackBtn) {
+    disclaimerFeedbackBtn.addEventListener('click', () => feedbackModal.style.display = 'flex');
+}
+
+// Close Modals (Cross Button)
+closeFeedback.addEventListener('click', () => smoothClose(feedbackModal));
+closeHowToUse.addEventListener('click', () => smoothClose(howToUseModal));
+
+// Submit Feedback Function
+async function submitFeedback() {
+    const text = document.getElementById('feedbackText').value;
+    
+    // BUG FIX: Ab yeh specifically sirf Feedback modal ke button ko hi pakrega
+    const submitBtn = document.querySelector('#feedbackModal .modal-submit-btn');
+
+    if(text.trim() === "") {
+        alert("This must not be empty!");
+        return;
+    }
+
+    // Button ko foran disable aur text change karein taake double click na ho
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = "Sending...";
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = "0.7"; // Thora dundhla (fade) kar dega taake click na ho sake
+
+    try {
+        // Backend API ko sirf text bhejenge (Bilkul Anonymous)
+        const response = await fetch('/api/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            alert("Error: " + data.error);
+        } else {
+            alert("Thank you! Your feedback has been submitted successfully.");
+            document.getElementById('feedbackText').value = "";
+            feedbackModal.style.display = 'none';
+        }
+    } catch (error) {
+        alert("Network error: Feedback not sent!");
+    } finally {
+        // Response aane ke baad button ko wapas normal state me layen
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = "1";
+    }
+}
+
+
+// ====== ROUTING LOGIC (Long Texts to Right Panel) ======
+const brandWrapper = document.getElementById('brandWrapper');
+const rightPanelContent = document.getElementById('rightPanelContent');
+const rightPanelText = document.getElementById('rightPanelText');
+const closeRightPanel = document.getElementById('closeRightPanel');
+
+function displayInRightPanel(text, chartUrl = null) {
+    // Logo ko cool animation k sath blur karke hide karein
+    brandWrapper.classList.remove('show-tech');
+    brandWrapper.classList.add('hide-tech');
+    
+    // NAYA: Chart Display Logic
+    const chartImg = document.getElementById('rightPanelChart');
+    if (chartUrl) {
+        chartImg.src = chartUrl;
+        chartImg.style.display = 'block';
+    } else {
+        chartImg.style.display = 'none';
+        chartImg.src = "";
+    }
+    
+    // Naye text panel ko show karein
+    rightPanelContent.classList.add('show');
+    rightPanelText.innerHTML = ''; 
+    
+// Fast chunk/word streaming for long documents
+        let words = text.split(' '); 
+        let i = 0;
+        let currentText = ''; 
+        const interval = setInterval(() => {
+            if (i < words.length) {
+                currentText += words[i] + ' ';
+                rightPanelText.innerHTML = formatText(currentText); 
+                i++;
+                rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
+            } else {
+                clearInterval(interval);
+            }
+        }, 25); // Har word par 5ms (Bijli jaisi speed)
+}
+
+// Close button (X) dabane se wapas Logo show karein
+closeRightPanel.addEventListener('click', () => {
+    rightPanelContent.classList.remove('show');
+    brandWrapper.classList.remove('hide-tech');
+    brandWrapper.classList.add('show-tech');
+});
+
+// ==========================================
+// ENTER KEY LOGIC FOR LOGIN & SIGNUP MODALS
+// ==========================================
+
+// --- Login Modal Enter Key Logic ---
+const loginEmailInput = document.getElementById('loginEmail');
+const loginPasswordInput = document.getElementById('loginPassword');
+
+loginEmailInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Default form submission rokne k liye
+        loginPasswordInput.focus(); // Next box par focus
+    }
+});
+
+loginPasswordInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        submitLogin(); // Last box par enter dabane se Login submit
+    }
+});
+
+
+// --- Signup Modal Enter Key Logic ---
+const signupFirstNameInput = document.getElementById('signupFirstName');
+const signupLastNameInput = document.getElementById('signupLastName');
+const signupEmailInput = document.getElementById('signupEmail');
+const signupPasswordInput = document.getElementById('signupPassword');
+const signupOTPInput = document.getElementById('signupOTP'); // NAYA: OTP box ka variable
+
+signupFirstNameInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        signupLastNameInput.focus();
+    }
+});
+
+signupLastNameInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        signupEmailInput.focus();
+    }
+});
+
+signupEmailInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        signupPasswordInput.focus(); // Ab Email k baad Password par jayega
+    }
+});
+
+signupPasswordInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        signupOTPInput.focus(); // Ab Password k baad OTP box par jayega
+    }
+});
+
+signupOTPInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        submitSignup(); // OTP k baad sidha Submit hoga
+    }
+});
+
+// ==========================================
+// DOWNLOAD REPORT AS PDF LOGIC
+// ==========================================
+const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+if (downloadPdfBtn) {
+    downloadPdfBtn.addEventListener('click', () => {
+        // 1. Change button text/icon to show it's working
+        const originalIcon = downloadPdfBtn.innerHTML;
+        downloadPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        // 2. Extract Data & Create a Clean, Print-Friendly Container
+        const reportText = document.getElementById('rightPanelText').innerHTML;
+        const chartImg = document.getElementById('rightPanelChart');
+        let chartHtml = '';
+
+        // Check if the chart is visible, if yes, include it securely in the PDF
+        if (chartImg && chartImg.style.display !== 'none' && chartImg.src) {
+            chartHtml = `<img src="${chartImg.src}" style="width: 100%; margin-top: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
+        }
+
+        const printContainer = document.createElement('div');
+        printContainer.innerHTML = `
+            <div style="padding: 30px; font-family: 'Inter', sans-serif; color: #1c282d;">
+                <h2 style="color: #006064; border-bottom: 2px solid #006064; padding-bottom: 10px; margin-bottom: 20px;">Sisca AI - Analysis Report</h2>
+                <div style="white-space: pre-wrap; line-height: 1.8; font-size: 15px;">${reportText}</div>
+                ${chartHtml}
+            </div>
+        `;
+
+        // 3. Define PDF settings
+        const opt = {
+            margin:       0.3, // Reduced margin since we added padding inside the container
+            filename:     'Sisca_AI_Data_Report.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // 4. Generate and Download
+        html2pdf().set(opt).from(printContainer).save().then(() => {
+            // Restore button
+            downloadPdfBtn.innerHTML = originalIcon;
+            showNotification('Report downloaded successfully!', 'success');
+        }).catch(err => {
+            console.error("PDF Generation Error: ", err);
+            downloadPdfBtn.innerHTML = originalIcon;
+            showNotification('Failed to download PDF.', 'error');
+        });
+    });
+}
+
+    </script>
+</body>
+</html>

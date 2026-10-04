@@ -1,0 +1,25 @@
+services:
+  sisca-virtual-computer:
+    build: .
+    container_name: sisca_agent_sandbox
+    restart: unless-stopped
+    ports:
+      # Expose noVNC port to host machine
+      - "6080:6080"
+    shm_size: '2gb'
+    # --- NAYA: Bypass Docker Security for Chromium Sandbox ---
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp=unconfined
+    # --------------------------------------------------------
+    volumes:
+      - ./uploads:/app/uploads
+      - ./static/outputs:/app/static/outputs
+      - ./agent_scripts:/app/agent_scripts 
+      - ./api_key.txt:/app/api_key.txt:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G # NAYA: Increased memory to prevent Docker from killing the container

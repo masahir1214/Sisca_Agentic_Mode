@@ -1,0 +1,1266 @@
+/* --- Core Styling & Modern Sage Theme (Deep Teal & Slate) --- */
+:root {
+    --bg-base: #ffffff; /* White background base */
+    --theme-primary: #006064; /* Primary Deep Teal */
+    --theme-secondary: #455A64; /* Secondary Slate Gray */
+    --theme-accent: #00838f; /* Slightly lighter teal for accents */
+    --glass-bg: rgba(255, 255, 255, 0.85); /* Clean white glass */
+    --glass-border: rgba(69, 90, 100, 0.15); /* Slate border */
+    --text-dark: #1c282d; /* Very dark slate for readability */
+    --text-light: #ffffff;
+    --font-family: 'Inter', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-base);
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    color: var(--text-dark);
+}
+
+/* Light Sage/Slate Bokeh Background for Intelligent Vibe */
+/* --- Premium Teal Background --- */
+.background-blur {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1; overflow: hidden;
+    /* Deep Teal Gradient Background */
+    background: linear-gradient(135deg, var(--theme-primary), #00363a); 
+}
+
+/* Background ke andar halki roshni (glowing blobs) taky premium feel aaye */
+.blob { position: absolute; border-radius: 50%; filter: blur(90px); }
+.blob-1 { width: 600px; height: 600px; background: rgba(0, 229, 255, 0.15); top: -10%; right: -5%; } /* Cyan glow */
+.blob-2 { width: 500px; height: 500px; background: rgba(255, 255, 255, 0.1); bottom: -10%; left: -5%; } /* White glow */
+.blob-3 { width: 400px; height: 400px; background: rgba(0, 210, 255, 0.15); top: 40%; left: 30%; } /* Light cyan glow */
+.blob-4 { width: 300px; height: 300px; background: rgba(255, 255, 255, 0.15); bottom: 20%; right: 15%; }
+
+
+/* --- Main Website Header --- */
+.main-website-header {
+    width: 100%;
+    padding: 1rem 2rem 0.5rem 2rem;
+    margin-bottom: 0.8rem; /* Ye heading aur grids ke darmiyan gap create karega */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    position: relative;
+}
+
+.main-website-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    /* ببل، بیک گراؤنڈ اور شیڈو کو ہٹا دیا گیا ہے */
+}
+
+.main-website-header .logo .custom-logo {
+    width: 35px; /* تصویر کے مطابق سائز تھوڑا بہتر کیا گیا ہے */
+    height: 35px;
+    object-fit: contain;
+}
+
+.main-website-header .logo h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-dark); /* رنگ کو تصویر کے مطابق ڈارک کر دیا گیا ہے */
+    letter-spacing: 0.8px;
+}
+
+/* --- Dashboard Layout --- */
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 1.8fr 1.2fr;
+    gap: 1.5rem;
+    /* Yahan pehli value (top padding) ko 4rem kar diya gaya hai taky upar space ban jaye */
+    padding: 1rem 1.5rem 1rem 1.5rem; 
+    height: 100vh; 
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.left-section { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 1.5rem; 
+    height: 100%;  /* Nayi line: Height fix karne ke liye */
+    min-height: 0; /* Nayi line: Box ko screen se bahar nikalne se rokne ke liye */
+}
+
+.top-panels {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1.3fr;
+    gap: 1.5rem;
+    flex: none;
+}
+
+
+/* Common Clean White Glass Panel Style (Matches the bottom area) */
+.glass-panel {
+    /* Opacity ko 0.98 kar diya hai taake ye bilkul pure bright white lagay */
+    background: rgba(255, 255, 255, 0.98); 
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 1);
+    border-radius: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1), inset 0 0 15px rgba(255, 255, 255, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Locked Panels Visuals */
+.locked-panel {
+    opacity: 0.8;
+}
+.lock-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: rgba(255,255,255,0.9);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.locked-panel > *:not(.lock-badge) { pointer-events: none; }
+
+/* 1. Media Panel */
+.media-panel { justify-content: flex-end; padding: 1rem; }
+.media-icons { display: flex; justify-content: flex-end; gap: 0.8rem; }
+.icon-box {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,0.8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: var(--theme-primary);
+    border: 1px solid rgba(255,255,255,0.9);
+}
+
+/* 2. Controls Panel. */
+.controls-panel { 
+    padding: 1.2rem 1rem; 
+    justify-content: center; 
+    /* Isko mukammal transparent karne ke liye overrides */
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: center; }
+
+.control-item { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 0.5rem; 
+    font-size: 0.8rem; 
+    font-weight: 600; 
+    /* Text ko solid white se nikal kar 70% soft white kar diya he */
+    color: rgba(255, 255, 255, 0.7); 
+    transition: all 0.3s ease;
+}
+
+.control-item i { 
+    font-size: 1.5rem; 
+    color: rgba(255, 255, 255, 0.9); 
+}
+
+.control-item:not(.locked-item):hover {
+    color: #ffffff;
+}
+.control-item:not(.locked-item):hover i {
+    color: #ffffff;
+    transform: scale(1.08); /* Icon thora sa bara (pop) hoga */
+}
+/* 3. Neural Panel */
+.neural-panel { align-items: center; justify-content: center; padding: 1.5rem; gap: 0.7rem; }
+.neural-sphere { font-size: 5rem; color: rgba(0, 96, 100, 0.4); animation: pulse 3s infinite alternate; }
+@keyframes pulse { from { transform: scale(1); opacity: 0.7;} to { transform: scale(1.05); opacity: 1;} }
+.neural-text { font-size: 0.8rem; letter-spacing: 2px; font-weight: 600; color: var(--theme-secondary); opacity: 0.9; }
+
+.init-btn {
+    
+    background: var(--theme-primary); 
+    border: none; 
+    color: var(--text-light); 
+    padding: 0.8rem 0.8rem;
+    border-radius: 12px; 
+    font-weight: 600; 
+    font-size: 0.85rem; 
+    margin-top: 0.9rem;
+    margin-bottom: 0.08rem;
+    cursor: pointer; 
+    transition: background 0.3s, transform 0.1s;
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+}
+
+.init-btn:hover {
+    background: var(--theme-accent); 
+    transform: scale(0.98); /* Button ko halka sa chota karega jis se "press" hone ka effect aayega */
+}
+
+/* 4. Workspace Panel */
+.workspace-panel { 
+    flex: 1.2; 
+    padding: 1.5rem; 
+    min-height: 0; /* Nayi line */
+}
+.workspace-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--theme-secondary); }
+.header-icons { display: flex; gap: 1rem; cursor: pointer; }
+.workspace-body { display: flex; gap: 1.5rem; height: 100%; }
+.workspace-sidebar { flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+.search-box {
+    display: flex; align-items: center; background: rgba(255,255,255,0.8);
+    border-radius: 8px; padding: 0.5rem 1rem; border: 1px solid rgba(255,255,255,0.9);
+}
+.search-box input { border: none; background: transparent; outline: none; margin-left: 0.5rem; width: 100%; color: var(--text-dark); }
+.file-list { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.85rem; }
+.file-list li { display: flex; align-items: center; gap: 0.5rem; color: var(--theme-secondary); font-weight: 500;}
+.workspace-dropzone {
+    flex: 2; border: 2px dashed rgba(69, 90, 100, 0.3); border-radius: 1rem;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.4); gap: 1rem; color: rgba(69, 90, 100, 0.7); font-weight: 600;
+}
+.workspace-dropzone i { font-size: 2.5rem; color: var(--theme-accent); }
+
+/* --- 5. Chat Section (Right Column) --- */
+.chat-section { 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+    padding-top: 1rem; 
+    min-height: 0; /* Nayi line: Taake sirf andar wale messages scroll hon */
+}
+
+/* Tabs */
+.chat-tabs { 
+    display: flex; 
+    justify-content: center; /* Ye line heading ko center karegi */
+    gap: 1rem; 
+    padding: 0 2rem; 
+    margin-bottom: 1rem; 
+    border-bottom: 1px solid rgba(69, 90, 100, 0.15); 
+    padding-bottom: 0.5rem; 
+}
+.tab { background: transparent; border: none; font-weight: 600; font-size: 0.85rem; color: var(--text-dark); opacity: 0.5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px;}
+.tab.active { background: rgba(255,255,255,0.9); opacity: 1; border: 1px solid rgba(255,255,255,0.9); color: var(--theme-primary); }
+
+.chat-subtitle { padding: 0 2rem; font-size: 1rem; font-weight: 600; margin-top: 0.5rem; color: var(--theme-secondary); }
+
+.chat-messages { flex: 1; overflow-y: auto; padding: 1rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth; }
+
+/* Chat Bubbles */
+.message { display: flex; gap: 1rem; max-width: 90%; animation: slide-in 0.3s ease-out; }
+@keyframes slide-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.message-avatar {
+    width: 32px; 
+    height: 32px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    flex-shrink: 0; 
+    margin-top: auto;
+    margin-bottom: 0px;
+}
+
+.message-avatar img {
+    width: 32px; /*Size of Chat Logo*/
+    height: 32px;
+    object-fit: contain;
+}
+
+.message-content { padding: 0.8rem 1.2rem; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+
+/* Assistant Bubble (Light) */
+.assistant-message { align-self: flex-start; }
+.assistant-message .message-content { 
+    background: rgba(255, 255, 255, 0.9); 
+    backdrop-filter: blur(10px); 
+    border: 1px solid rgba(69, 90, 100, 0.15); 
+    border-radius: 20px 20px 20px 4px; 
+    color: var(--text-dark);
+}
+
+/* User Bubble (Deep Teal to Slate Gradient) */
+.user-message { align-self: flex-end; flex-direction: row-reverse; }
+.user-message .message-avatar { display: none; }
+.user-message .message-content { 
+    background: linear-gradient(135deg, var(--theme-secondary), var(--theme-primary)); 
+    color: var(--text-light); 
+    border-radius: 20px 20px 4px 20px; 
+    border: 1px solid rgba(255,255,255,0.1); 
+    box-shadow: 0 4px 15px rgba(0, 96, 100, 0.3); 
+}
+
+.suggestion-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.2rem; max-width: 420px; }
+.chip { 
+    background: rgba(255, 255, 255, 0.8); 
+    border: 1px solid rgba(69, 90, 100, 0.2); 
+    padding: 0.4rem 0.8rem; border-radius: 8px; 
+    font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.2s; color: var(--theme-secondary);
+}
+.chip:hover { border-color: var(--theme-primary); background: rgba(255, 255, 255, 1); color: var(--theme-primary); }
+
+/* Input Area */
+.input-area { 
+    padding: 1rem 2rem 0.5rem 2rem; 
+    position: relative; 
+    border-top: 1px solid rgba(69, 90, 100, 0.15); 
+    /* Same matching background */
+    background: rgba(255, 255, 255, 0.85); 
+    border-radius: 0 0 1.5rem 1.5rem; 
+}
+
+#imagePreviewContainer { position: absolute; bottom: 80px; left: 2rem; padding: 0.5rem; background: rgba(255, 255, 255, 0.95); border-radius: 1rem; }
+#imagePreview { max-height: 60px; border-radius: 0.5rem; }
+#removeImageBtn { position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; }
+
+.input-container-pill {
+    display: flex; align-items: center; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 16px; padding: 0.5rem; gap: 0.8rem;
+    box-shadow: 0 4px 15px rgba(69, 90, 100, 0.08); margin-bottom: 0.5rem;
+}
+#messageInput { flex: 1; border: none; background: transparent; outline: none; font-size: 0.95rem; padding-left: 0.5rem; color: var(--text-dark); }
+.action-icon { background: transparent; border: none; color: rgba(69, 90, 100, 0.7); font-size: 1.2rem; cursor: pointer; }
+
+/* Mic Glow matching the Sage theme */
+.mic-glow-wrapper { position: relative; border-radius: 14px; padding: 2px; background: linear-gradient(135deg, rgba(0, 131, 143, 0.5), rgba(0, 96, 100, 0.5)); }
+.mic-icon-btn { background: rgba(255, 255, 255, 0.95); border: none; border-radius: 12px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; color: var(--theme-primary);}
+.mic-icon-btn.recording { animation: mic-glow 1.5s infinite; }
+@keyframes mic-glow { 0%, 100% { box-shadow: 0 0 10px rgba(0, 131, 143, 0.4); } 50% { box-shadow: 0 0 20px rgba(0, 96, 100, 0.6); } }
+
+.audio-waveform { align-items: center; gap: 3px; height: 18px; opacity: 0.8; }
+.audio-waveform span { display: block; width: 3px; height: 100%; background: var(--theme-accent); border-radius: 2px; animation: equalize 1s infinite ease-in-out; }
+.send-btn { background: transparent; color: rgba(69, 90, 100, 0.7); border: none; cursor: pointer; font-size: 1.1rem; padding: 0 0.5rem; }
+.send-btn:hover { color: var(--theme-primary); }
+
+/* System Stats at bottom right */
+.system-stats { display: flex; gap: 1rem; font-size: 0.7rem; font-weight: 700; color: var(--theme-secondary); opacity: 0.8; align-items: center; }
+
+/* Typing Dots */
+.typing-dots { display: flex; gap: 4px; padding: 4px 0; }
+.typing-dots span { width: 6px; height: 6px; background: var(--theme-primary); border-radius: 50%; opacity: 0.6; animation: typing-bounce 1.4s infinite ease-in-out both; }
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+/* Scrollbar */
+.chat-messages::-webkit-scrollbar { width: 5px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(69, 90, 100, 0.2); border-radius: 10px; }
+
+/* Responsive adjustments */
+/* --- Mobile Blocker Styling --- */
+#mobile-blocker {
+    display: none; /* By default hidden rahega */
+}
+
+/* Jab screen 1024px se choti hogi (Mobile & Tablet) */
+@media (max-width: 1024px) {
+    /* Poori website ko hide kar do */
+    .dashboard-layout, .background-blur, .main-website-header {
+        display: none !important;
+    }
+
+    /* Sirf blocker screen dikhao */
+    #mobile-blocker {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: linear-gradient(135deg, var(--theme-primary), #00363a);
+        color: white;
+        text-align: center;
+        padding: 2.5rem;
+        z-index: 99999;
+        font-family: var(--font-family);
+    }
+
+    #mobile-blocker h1 {
+        font-size: 2.2rem;
+        margin-bottom: 1.2rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    #mobile-blocker p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        opacity: 0.9;
+        max-width: 400px;
+    }
+}
+/* --- Large Mic Button in Grid Box --- */
+.large-mic-wrapper {
+    border-radius: 28px !important;
+    padding: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.large-mic-btn {
+    width: 85px !important;
+    height: 85px !important;
+    border-radius: 24px !important;
+    font-size: 2.5rem !important;
+}
+
+/* --- Enhanced Organic Energy Core (Fixed for Light Background) --- */
+
+.energy-core-wrapper {
+    position: relative;
+    width: 105px;
+    height: 105px;
+    margin-top: -0.3rem;
+    margin-bottom: 0.1rem; /* Pehle 1.5rem tha, isko kam kar diya */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* Ab ye shapes light background par proper nazar aayengi */
+.core-layer {
+    position: absolute;
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    animation: organicMorph 6s linear infinite;
+    transition: all 0.4s ease;
+    opacity: 0.85;
+    filter: blur(3px); /* Liquid merge effect */
+}
+
+.layer-1 {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+    animation-duration: 6s;
+}
+
+.layer-2 {
+    width: 85%; height: 85%;
+    background: linear-gradient(135deg, #06beb6, #48b1bf);
+    animation-duration: 8s;
+    animation-direction: reverse;
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+}
+
+.layer-3 {
+    width: 70%; height: 70%;
+    background: linear-gradient(135deg, #00e5ff, var(--theme-accent));
+    animation-duration: 5s;
+}
+
+/* Darmiyan wala glowing dot (Ab bilkul soft aur natural hoga) */
+.core-center {
+    position: absolute;
+    width: 26px; /* Size thora bara kiya hai taky soft glow theek se nazar aaye */
+    height: 26px;
+    /* Solid white ki jagah radial-gradient lagaya hai jo kinaroon se transparent ho jata hai */
+    background: radial-gradient(circle, #ffffff 15%, rgba(0, 229, 255, 0.8) 50%, transparent 100%);
+    border-radius: 50%;
+    /* Box shadows ko mazeed soft aur phaila hua banaya hai */
+    box-shadow: 
+        0 0 12px 4px rgba(255, 255, 255, 0.9), 
+        0 0 30px 12px rgba(0, 229, 255, 0.6),
+        0 0 50px 20px rgba(0, 96, 100, 0.4);
+    animation: coreBeat 2s infinite ease-in-out alternate;
+    transition: all 0.3s ease;
+    z-index: 5;
+    filter: blur(1px); /* Edges ko mazeed soft karne ke liye */
+    mix-blend-mode: screen; /* Background waves ke sath naturally mix hone ke liye */
+}
+
+/* === ACTIVE STATE: Jab Mic on hoga === */
+.energy-core-wrapper.listening .core-layer {
+    animation-duration: 2.5s; /* Spinning fast */
+    transform: scale(1.2); /* Expand hoga */
+    filter: blur(5px) brightness(1.2);
+}
+
+.energy-core-wrapper.listening .core-center {
+    /* Active hone par roshni mazeed phail jayegi aur glow strong hoga */
+    box-shadow: 
+        0 0 20px 8px rgba(255, 255, 255, 1), 
+        0 0 45px 18px rgba(0, 229, 255, 0.8),
+        0 0 70px 30px rgba(0, 96, 100, 0.6);
+    animation-duration: 0.5s;
+    transform: scale(1.3);
+}
+/* --- NAYI LINE: Missing Animations Wapas Add Ki Gayi Hain --- */
+@keyframes organicMorph {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.05); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes coreBeat {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    100% { transform: scale(1.2); opacity: 1; }
+}
+
+/* --- Modals / Popups Styling --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    /* NAYA: Blur hata kar deep dark shadow (overlay) laga diya hai */
+    background-color: rgba(15, 25, 30, 0.75); 
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--bg-base);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 20px 40px rgba(0, 96, 100, 0.2);
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out forwards;
+    border: 1px solid var(--glass-border);
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 1.8rem;
+    color: var(--theme-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-btn:hover { color: #ef4444; }
+
+.modal h2 {
+    color: var(--theme-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+}
+
+.modal p {
+    color: var(--theme-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid rgba(69, 90, 100, 0.2);
+    border-radius: 12px;
+    font-family: var(--font-family);
+    resize: none;
+    outline: none;
+    margin-bottom: 1rem;
+    transition: border-color 0.3s;
+}
+
+.modal textarea:focus { border-color: var(--theme-primary); }
+
+.modal-submit-btn {
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    width: 100%;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+}
+
+.modal-submit-btn:hover { background: var(--theme-accent); transform: scale(0.98); }
+
+.instructions-list { list-style: none; padding: 0; }
+.instructions-list li {
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(69, 90, 100, 0.1);
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+.instructions-list li:last-child { border-bottom: none; }
+.instructions-list li i { color: var(--theme-primary); width: 20px; margin-right: 8px; }
+.instructions-list li strong { color: var(--theme-primary); }
+/* --- Naya Logo Panel --- */
+.logo-panel {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+}
+
+.panel-logo {
+    width: 75px; 
+    height: 75px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0, 96, 100, 0.3));
+}
+
+.logo-panel h2 {
+    font-size: 1.8rem;
+    color: var(--text-dark);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+/* --- Right Brand Panel (Centered Logo & Pop-out Effect) --- */
+.right-brand-panel {
+    /* Same solid bright frosted white */
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+.brand-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem; 
+    /* Float animation wese hi chalegi */
+    animation: gentleFloat 4s ease-in-out infinite;
+    /* Pop-out ke liye scale use karenge taake float animation disturb na ho */
+    transition: scale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.brand-logo {
+    width: 140px; /* Logo ka size thora bara kiya hai */
+    height: 140px;
+    object-fit: contain;
+    /* 3D Pop-out Shadow */
+    filter: drop-shadow(0 15px 25px rgba(0, 96, 100, 0.4)); 
+}
+
+.brand-wrapper h2 {
+    font-size: 2.8rem;
+    color: var(--text-dark); /* Purana dark color */
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin: 0;
+    text-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.brand-wrapper h4 {
+    margin: 0; /* Slogan ka extra gap khatam karne ke liye */
+    color: var(--theme-secondary); /* Slogan ka color thora professional karne ke liye (optional) */
+    font-weight: 500;
+}
+
+@keyframes gentleFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); } /* Halka sa upar move karega */
+}
+
+/* --- Right Panel Long Content Routing --- */
+.right-panel-content {
+    display: none;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    padding: 3.5rem 3rem 2rem 3rem; /* Top padding thori ziada ki hai taky close button se na takraye */
+    overflow-y: auto;
+    position: absolute;
+    top: 0; left: 0;
+    color: var(--text-dark);
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.right-panel-content.show {
+    display: block;
+    animation: techFadeIn 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+.right-panel-text {
+    white-space: pre-wrap; /* Email aur paragraph formatting (lines) wesi hi rahengi */
+}
+
+/* Right Panel Custom Scrollbar */
+.right-panel-content::-webkit-scrollbar { width: 6px; }
+.right-panel-content::-webkit-scrollbar-track { background: transparent; }
+.right-panel-content::-webkit-scrollbar-thumb { background: rgba(0, 96, 100, 0.2); border-radius: 10px; }
+
+/* Close Panel Button */
+.close-panel-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgba(69, 90, 100, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 35px; height: 35px;
+    cursor: pointer;
+    color: var(--theme-secondary);
+    transition: all 0.3s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    z-index: 10;
+}
+.close-panel-btn:hover {
+    background: #ef4444; color: white; transform: rotate(90deg);
+}
+
+/* Animations (Holographic Tech Fade) */
+.brand-wrapper.hide-tech {
+    animation: techFadeOut 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    pointer-events: none;
+}
+
+.brand-wrapper.show-tech {
+    /* Pehle techFadeIn chalega, aur 0.5 second ke baad wapas gentleFloat shuru ho jayega */
+    animation: techFadeIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards, gentleFloat 4s ease-in-out 0.5s infinite;
+}
+
+@keyframes techFadeOut {
+    0% { opacity: 1; filter: blur(0); transform: scale(1); }
+    100% { opacity: 0; filter: blur(15px); transform: scale(1.1); visibility: hidden; }
+}
+
+@keyframes techFadeIn {
+    0% { opacity: 0; filter: blur(15px); transform: translateY(15px); }
+    100% { opacity: 1; filter: blur(0); transform: translateY(0); visibility: visible; }
+}
+
+/* --- Auth / Profile Panel (Top Left Grid) --- */
+.auth-panel {
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem;
+}
+
+/* Half-person Logo (Avatar) */
+.auth-profile {
+    width: 75px;  
+    height: 75px; 
+    background: linear-gradient(135deg, rgba(0, 131, 143, 0.1), rgba(0, 96, 100, 0.05));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.3rem; 
+    color: var(--theme-primary);
+    border: 2px solid rgba(0, 131, 143, 0.2);
+    box-shadow: inset 0 0 10px rgba(0, 131, 143, 0.1);
+    transition: all 0.3s ease;
+    
+    /* BUG FIX: Margin ko hamesha same rakhein taake panel ki height shrink/expand na ho */
+    margin-top: 0rem !important; 
+    margin-bottom: 0.5rem !important; 
+}
+
+.auth-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--theme-secondary);
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.5px;
+}
+
+/* Login / Signup Buttons */
+.auth-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 0.6rem;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: auto !important; /* Button ko mukammal bottom par dhakel dega */
+}
+
+.auth-btn {
+    flex: 1; /* NAYI LINE: Dono buttons ko bilkul barabar (equal) size dega */
+    white-space: nowrap; /* NAYI LINE: "Sign Up" ko 2 lines mein tootne se rokega */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(69, 90, 100, 0.2);
+    color: var(--theme-secondary);
+    padding: 0.45rem 0.5rem; /* Slim aur compact padding */
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+
+
+.auth-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(69, 90, 100, 0.2);
+    border-radius: 12px;
+    font-family: var(--font-family);
+    outline: none;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    transition: border-color 0.3s;
+}
+
+.auth-input:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 5px rgba(0, 96, 100, 0.2);
+}
+
+.auth-btn i {
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+/* Sign Up button ko thora mukhtalif color diya hai */
+.auth-btn.signup-btn {
+    background: rgba(0, 96, 100, 0.05);
+    color: var(--theme-primary);
+    border-color: rgba(0, 96, 100, 0.2);
+}
+
+/* --- AI Disclaimer Notice --- */
+.ai-disclaimer {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--theme-secondary);
+    opacity: 0.85;
+    margin-top: 0.8rem;
+    margin-bottom: 0.3;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.ai-disclaimer strong {
+    color: var(--theme-primary);
+    font-weight: 600;
+    opacity: 1;
+}
+
+/* --- Soft Drop Shadow for Auth & Neural Grids --- */
+.auth-panel, .neural-panel {
+    /* Bahar ki taraf ek soft dark shadow aur andar ki taraf white glow */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), inset 0 0 15px rgba(255, 255, 255, 1) !important;
+    transition: box-shadow 0.3s ease; /* Smooth effect ke liye */
+}
+
+/* Halka sa hover effect (Optional: agar mouse laane par mazeed pop out karna ho) */
+.auth-panel:hover, .neural-panel:hover {
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35), inset 0 0 15px rgba(255, 255, 255, 1) !important;
+}
+
+/* --- Soft Drop Shadow for Auth, Neural & Chat Grids --- */
+.auth-panel, .neural-panel, .workspace-panel {
+    /* Bahar ki taraf ek soft dark shadow aur andar ki taraf white glow */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), inset 0 0 15px rgba(255, 255, 255, 1) !important;
+    transition: box-shadow 0.3s ease; /* Smooth effect ke liye */
+}
+
+/* Halka sa hover effect */
+.auth-panel:hover, .neural-panel:hover, .workspace-panel:hover {
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35), inset 0 0 15px rgba(255, 255, 255, 1) !important;
+}
+
+/* --- Password Wrapper & Eye Icon --- */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper .auth-input {
+    padding-right: 40px; /* Text icon ke neechay na jaye */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--theme-secondary);
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+    color: var(--theme-primary);
+}
+
+/* --- BUTTON ALIGNMENT FIXES --- */
+.auth-panel {
+    padding: 1.5rem !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Containers ko bottom mein set karne ke liye */
+.auth-panel-actions, .auth-buttons {
+    margin-top: auto !important; 
+    width: 100%;
+    padding-top: 1rem;
+}
+
+/* WAPAS PURANI POSITION: Upar aur Neechay (Vertical Stack) */
+.auth-panel-actions {
+    display: flex;
+    flex-direction: column; 
+    align-items: center; 
+    gap: 0.4rem; 
+    width: 100%;
+}
+
+/* --- Logout Button Style (Talk with SISCA ke barabar) --- */
+#logoutBtn {
+    padding: 0.5rem 1.5rem !important; /* Size increased */
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem !important; 
+    width: auto !important; /* Content ke hisaab se width lega */
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    box-shadow: none !important;
+}
+
+/* --- Logout Button Styles --- */
+#logoutBtn:hover {
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3) !important;
+}
+
+.auth-btn:hover {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: var(--theme-primary);
+    color: var(--theme-primary);
+}
+
+.connected-state {
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+/* =========================================
+   CUSTOM TOAST NOTIFICATIONS
+   ========================================= */
+#toast-container {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.custom-toast {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-left: 4px solid var(--theme-primary);
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 96, 100, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    max-width: 380px;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transform: translateX(120%);
+    animation: slideInToast 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transition: all 0.3s ease;
+}
+
+.custom-toast span { line-height: 1.4; }
+.custom-toast i { font-size: 1.4rem; flex-shrink: 0; }
+
+/* Themes for different alerts */
+.custom-toast.error { border-left-color: #ef4444; }
+.custom-toast.error i { color: #ef4444; }
+
+.custom-toast.success { border-left-color: #10b981; }
+.custom-toast.success i { color: #10b981; }
+
+.custom-toast.info { border-left-color: #3b82f6; }
+.custom-toast.info i { color: #3b82f6; }
+
+.custom-toast.fade-out {
+    opacity: 0;
+    transform: translateX(120%);
+}
+
+@keyframes slideInToast {
+    from { transform: translateX(120%); }
+    to { transform: translateX(0); }
+}
+
+/* =========================================
+   TEXT SELECTION / COPY PROTECTION LOGIC
+   ========================================= */
+/* 1. Global level par poori website ka text select/copy hona band karein */
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* 2. Sirf in makhsoos hisson (Chat, Right Panel, Profile Text, aur Inputs) ko copyable banayen */
+.chat-messages, 
+.right-panel-content, 
+.auth-text,
+.ai-disclaimer, /* NAYI LINE: Disclaimer ko copyable banane ke liye */
+input, 
+textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* 3. Ehtiyatan tamaam buttons aur clickable icons ko strictly un-selectable kar dein */
+button, 
+.init-btn, 
+.auth-btn, 
+.control-item, 
+.tab, 
+.close-btn,
+.brand-wrapper,
+#actualConnectBtn {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+}
+
+/* =========================================
+   AGENT MODE TOGGLE ACTIVE STATE
+========================================= */
+.control-item.agent-active i {
+    /* Outer border ko white karega */
+    color: #e0e7e5 !important; 
+    position: relative;
+    z-index: 2; /* Ise background se upar laane ke liye */
+}
+
+/* YEH BLOCK ZAROORI HAI: Yeh theek us hole ke peechay Green Color bharega */
+.control-item.agent-active i::after {
+    content: '';
+    position: absolute;
+    background-color: #10b981; /* Inner Green Teal Color */
+    width: 0.5em; 
+    height: 0.5em;
+    border-radius: 50%;
+    top: 50%;
+    right: 0.08em; /* Exactly right side wale hole ke peechay set karega */
+    transform: translateY(-50%);
+    z-index: -1; /* Icon ke peechay chala jayega */
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.8); /* Green glow effect */
+}
+
+.control-item.agent-active span {
+    color: #10b981;
+    font-weight: 700;
+}
+
+/* =========================================
+   MODE SELECTOR STYLING (Fast vs Research)
+========================================= */
+.mode-selector-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
+}
+
+.mode-selector {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent; /* Default background transparent kar diya */
+    border: 1px solid transparent; /* Default border bhi invisible kar diya */
+    border-radius: 15px; 
+    padding: 0.25rem 1.0rem 0.25rem 0.5rem; 
+    font-size: 0.75rem; 
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+    font-family: var(--font-family);
+    transition: all 0.3s ease; /* Hover ko smooth banane ke liye thora time barhaya */
+}
+
+.mode-selector:hover {
+    background: rgba(240, 242, 245, 0.9); /* Hover par soft background show hoga */
+    border: 1px solid rgba(0, 0, 0, 0.05); /* Hover par halka sa border show hoga */
+}
+
+.mode-selector:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    background: rgba(240, 242, 245, 0.9); /* Focus hone par bhi background show hoga */
+}
+
+.dropdown-icon {
+    position: absolute;
+    right: 12px; /* Icon ko thora right edge ki taraf shift kiya */
+    font-size: 0.65rem; 
+    color: var(--text-dark);
+    pointer-events: none; 
+    opacity: 0.8;
+}
+/* =========================================
+   MODAL CLOSING ANIMATION (Premium Zoom-Out)
+========================================= */
+.modal-closing {
+    /* Snappy aur smooth exit ke liye timing 0.2s kardi hai */
+    animation: modalScaleOut 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important; 
+}
+
+@keyframes modalScaleOut {
+    0% { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: scale(0.92); /* Halka sa peeche (shrink) hoga */
+    }
+}
+
+@keyframes modalSlideOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(20px); /* Neechay ki taraf slide ho kar fade out hoga */ }
+}
+
+/* =========================================
+   LOCKED INPUT PLACEHOLDER STYLING
+========================================= */
+.locked-input::placeholder {
+    font-style: italic !important;
+    opacity: 0.8;
+}
+
+/* =========================================
+   CUSTOM DROPDOWN MENU STYLING
+========================================= */
+.custom-select-wrapper {
+    position: relative;
+    user-select: none;
+}
+
+.custom-select-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 90px; /* Width thori increase ki taake 'Research' easily fit ho */
+    padding-right: 1.6rem; /* Right side par text aur icon ke darmiyan extra gap add kiya */
+}
+
+.custom-select-menu {
+    position: absolute;
+    bottom: 120%; /* Chat bar ke upar open hoga */
+    left: 0;
+    width: 120px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 96, 100, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 96, 100, 0.15);
+    overflow: hidden;
+    display: none; /* Default hidden */
+    flex-direction: column;
+    z-index: 100;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Jab dropdown open ho */
+.custom-select-menu.show {
+    display: flex;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.custom-option {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--theme-secondary);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.custom-option:hover {
+    background: rgba(0, 96, 100, 0.05);
+    color: var(--theme-primary);
+}
+
+.custom-option.selected {
+    background: rgba(0, 96, 100, 0.08);
+    color: var(--theme-primary);
+    font-weight: 700;
+}
+
+/* =========================================
+   VISUALS MODE TOGGLE ACTIVE STATE
+========================================= */
+.control-item.visuals-active i {
+    color: #e0e7e5 !important; 
+    position: relative;
+    z-index: 2;
+}
+
+.control-item.visuals-active i::after {
+    content: '';
+    position: absolute;
+    background-color: #10b981; /* NAYA: Green Color (Matches Connected Button) */
+    width: 0.5em; 
+    height: 0.5em;
+    border-radius: 50%;
+    top: 50%;
+    right: 0.08em; 
+    transform: translateY(-50%);
+    z-index: -1;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.8); /* NAYA: Green Glow Shadow */
+}
+
+.control-item.visuals-active span {
+    color: #10b981; /* NAYA: Green Text */
+    font-weight: 700;
+}
