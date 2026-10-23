@@ -323,6 +323,13 @@
             }
         }
 
+        // ====== Open correct tab based on ?mode= in URL ======
+        (function () {
+            const mode = new URLSearchParams(window.location.search).get('mode');
+            if (mode === 'signup') switchTab('signup');
+            else switchTab('login');
+        })();
+
         // ==========================================
         // ENTER KEY LOGIC FOR AUTH PAGE
         // ==========================================

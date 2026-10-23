@@ -1323,11 +1323,11 @@ button,
     box-shadow: 0 6px 15px rgba(30, 158, 137, 0.4) !important;
 }
 
-.minimal-top-nav #logoutBtn {
+.minimal-top-nav #topLogoutBtn {
     background: #ef4444 !important;
     box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3) !important;
 }
 
-.minimal-top-nav #logoutBtn:hover {
+.minimal-top-nav #topLogoutBtn:hover {
     background: #dc2626 !important;
 }

@@ -97,12 +97,12 @@
     <div class="solid-light-bg"></div>
 
     <div class="minimal-top-nav">
-    <div id="loggedInActions" style="display: none;">
-        <button id="logoutBtn" class="auth-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    <div id="topLoggedInActions" style="display: none;">
+        <button id="topLogoutBtn" class="auth-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
-    <div id="authButtonsDiv" style="display: flex; gap: 10px;">
-        <button id="openLoginModal" class="auth-btn signup-btn">Login</button>
-        <button id="openSignupModal" class="auth-btn signup-btn">Sign Up</button>
+    <div id="topAuthButtonsDiv" style="display: flex; gap: 10px;">
+        <button id="topOpenLoginModal" class="auth-btn signup-btn">Login</button>
+        <button id="topOpenSignupModal" class="auth-btn signup-btn">Sign Up</button>
     </div>
 </div>
 
@@ -524,9 +524,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         const user = JSON.parse(savedUserStr);
         document.getElementById('currentUserDisplay').innerText = `${user.first_name} ${user.last_name}`;
         document.getElementById('authButtonsDiv').style.display = 'none';
+        document.getElementById('topAuthButtonsDiv').style.display = 'none';
         
         const loggedInActions = document.getElementById('loggedInActions');
         if (loggedInActions) loggedInActions.style.display = 'flex';
+        document.getElementById('topLoggedInActions').style.display = 'flex';
         
         if (authProfileIcon) authProfileIcon.classList.add('logged-in'); 
         
@@ -577,7 +579,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ====== LOGOUT LOGIC ======
-document.getElementById('logoutBtn').addEventListener('click', async () => {
+async function handleLogout() {
     
     // ==========================================
     // NAYA: Abort any pending requests immediately upon logout
@@ -592,9 +594,11 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 
     document.getElementById('currentUserDisplay').innerText = 'Guest Mode';
     document.getElementById('authButtonsDiv').style.display = 'flex';
+    document.getElementById('topAuthButtonsDiv').style.display = 'flex';
     
     const loggedInActions = document.getElementById('loggedInActions');
     if (loggedInActions) loggedInActions.style.display = 'none';
+    document.getElementById('topLoggedInActions').style.display = 'none';
     
     const authProfileIcon = document.querySelector('.auth-profile');
     if (authProfileIcon) authProfileIcon.classList.remove('logged-in');
@@ -614,7 +618,7 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
             <div class="message assistant-message">
                 <div class="message-avatar">
                     <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
-                        <img src="/static/logo.png" alt="Sisca AI" draggable="true">
+                        <img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true">
                     </a>
                 </div>
                 <div class="message-wrapper">
@@ -658,6 +662,10 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
     }
 
     alert('Logged out successfully!');
+}
+['logoutBtn', 'topLogoutBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', handleLogout);
 });
 
 
@@ -791,12 +799,14 @@ const loginModal = document.getElementById('loginModal');
 const signupModal = document.getElementById('signupModal');
 
 // ====== REDIRECT TO AUTH PAGE ======
-document.getElementById('openLoginModal').addEventListener('click', () => {
-    window.location.href = '/auth'; 
+['openLoginModal', 'topOpenLoginModal'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', () => { window.location.href = '/auth'; });
 });
 
-document.getElementById('openSignupModal').addEventListener('click', () => {
-    window.location.href = '/auth?mode=signup'; 
+['openSignupModal', 'topOpenSignupModal'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', () => { window.location.href = '/auth?mode=signup'; });
 });
 document.getElementById('closeLogin').addEventListener('click', () => smoothClose(loginModal));
 document.getElementById('closeSignup').addEventListener('click', () => smoothClose(signupModal));
@@ -1392,7 +1402,7 @@ const chatForm = document.getElementById('chatForm');
             
             let avatarHTML = '';
             if (sender === 'assistant') {
-                avatarHTML = `<div class="message-avatar"><a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;"><img src="/static/logo.png" alt="Sisca AI" draggable="true"></a></div>`;
+                avatarHTML = `<div class="message-avatar"><a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;"><img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true"></a></div>`;
             }
             let imageHTML = '';
             if (imageBase64) {
@@ -1446,7 +1456,7 @@ const chatForm = document.getElementById('chatForm');
             typingDiv.innerHTML = `
                 <div class="message-avatar">
                     <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
-                        <img src="/static/logo.png" alt="Sisca AI" draggable="true">
+                        <img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true">
                     </a>
                 </div>
                 <div class="message-wrapper">
