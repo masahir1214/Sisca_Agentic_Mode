@@ -4,6 +4,7 @@ groq_api_key.txt
 Sisca_email_Pass.txt
 client_secret.json
 database_url.txt
+sisca_users.db
 
 # runtime data
 uploads/*
