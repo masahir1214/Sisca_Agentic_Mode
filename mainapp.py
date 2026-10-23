@@ -861,7 +861,7 @@ def process_with_gemini(user_message, image_base64=None, data_file=None, user_em
             try:
                 groq_client = Groq(api_key=groq_key)
                 completion = groq_client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model="openai/gpt-oss-120b",
                     messages=messages
                 )
                 groq_response = completion.choices[0].message.content
@@ -896,7 +896,7 @@ def process_with_gemini(user_message, image_base64=None, data_file=None, user_em
             Reply ONLY with one word: DATA, ACTION, DRAFT, AGENT, or CHAT."""
         
             completion = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",
                 messages=[{"role": "user", "content": prompt}]
             )
             intent = completion.choices[0].message.content.strip().upper()
@@ -1008,22 +1008,22 @@ def process_with_gemini(user_message, image_base64=None, data_file=None, user_em
     # Condition 1: Agar Action/Confirmation hai ya Image hai
     # NAYA: Agar user 'send' ya 'schedule' kahe confirmation ke baad, toh Gemini hi handle karega
     if image_base64 or smart_intent == "ACTION" or any(word in user_message.lower() for word in ["send", "bhej", "schedule", "yes", "ok"]):
-        print("Action/Image/Confirmation detected -> Using Gemini 2.5 Flash")
+        print("Action/Confirmation detected -> Using Gemini 3.1 Flash")
         result, err = run_gemini("gemini-flash-latest")
         if result: return result
         
-        print(f"Flash failed -> Fallback to Gemini 2.5 Pro")
+        print(f"Flash failed -> Fallback to Gemini 3.1 Pro")
         result, err = run_gemini("gemini-pro-latest")
         if result: return result
         global_last_error = err
         
     # Condition 2: Agar Draft ya normal Chat hai
     else:
-        print("Text/Drafting detected -> Using LLaMA 3.3 70B (Groq)")
+        print("Text/Drafting detected -> Using Groq")
         result, err = run_groq()
         if result: return result
         
-        print(f"Groq failed -> Fallback to Fast Gemini 2.5 Flash")
+        print(f"Groq failed -> Fallback to Fast Gemini 3.1 Flash")
         result, err = run_gemini("gemini-flash-latest")
         if result: return result
         global_last_error = err

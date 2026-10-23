@@ -63,7 +63,7 @@ def check_gemini_keys():
         try:
             client = genai.Client(api_key=key)
             response = client.models.generate_content(
-                model="gemini-3.5-flash",
+                model="gemini-3.8-flash",
                 contents="Reply with just the word OK.",
             )
             _ = response.text  # force evaluation
@@ -111,7 +111,7 @@ def check_groq_keys():
         try:
             client = Groq(api_key=key)
             completion = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",
                 messages=[{"role": "user", "content": "Reply with just OK."}],
             )
             _ = completion.choices[0].message.content

@@ -1,19 +1,24 @@
+# secrets (never commit)
 api_key.txt
 groq_api_key.txt
 Sisca_email_Pass.txt
 client_secret.json
 database_url.txt
 
+# runtime data
+uploads/*
+!uploads/.gitkeep
+static/outputs/*
+!static/outputs/.gitkeep
+agent_scripts/google_user_profile/
+agent_scripts/agent_run.log
+agent_scripts/data_interpreter_*.py
 
-*.db
-*.sqlite3
-sisca_users.db
-
-
+# python / env
 .venv/
 venv/
 env/
-
 __pycache__/
 *.pyc
 .DS_Store
+.vscode/

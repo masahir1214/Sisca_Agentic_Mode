@@ -37,183 +37,155 @@
         <div class="blob blob-4"></div>
     </div>
     
+    <!-- Sidebar Toggle Button -->
+    <button id="sidebarToggle" class="sidebar-toggle-btn" title="Open Menu">
+        <i class="fas fa-bars"></i>
+    </button>
 
-    <div class="dashboard-layout">
+    <!-- Left Sidebar -->
+    <div id="leftSidebar" class="glass-panel sidebar">
+        <button id="closeSidebar" class="close-panel-btn" style="top: 15px; right: 15px;"><i class="fas fa-times"></i></button>
+
+        <!-- Auth Section -->
+        <div class="sidebar-section auth-section">
+            <div class="auth-profile"><i class="fas fa-user"></i></div>
+            <div class="auth-text" id="currentUserDisplay">Guest Mode</div>
+            <div class="auth-panel-actions" id="loggedInActions" style="display: none; width: 100%;">
+                <button id="logoutBtn" style="width: 100%;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+            <div class="auth-buttons" id="authButtonsDiv" style="flex-direction: column; width: 100%;">
+                <button class="auth-btn signup-btn" id="openLoginModal"><i class="fas fa-sign-in-alt"></i> Login</button>
+                <button class="auth-btn signup-btn" id="openSignupModal"><i class="fas fa-user-plus"></i> Sign Up</button>
+            </div>
+        </div>
+
+        <hr class="sidebar-divider">
+
+        <!-- Controls Section -->
+        <div class="sidebar-section">
+            <div class="control-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; text-align: center;">
+                <div class="control-item" id="visualsBtn" title="Toggle Data Visualization" style="cursor: pointer; opacity: 1;">
+                    <i class="fas fa-toggle-off" style="font-size: 1.7rem; margin-bottom: 5px;"></i><span>VISUALS</span>
+                </div>
+                <div class="control-item" id="connectGmailBtn" style="cursor: pointer; opacity: 1;" title="Connect Gmail">
+                    <i class="fas fa-envelope" style="font-size: 1.5rem; margin-bottom: 5px;"></i><span>CONNECT</span>
+                </div>
+                <div class="control-item" id="feedbackBtn" style="cursor: pointer; opacity: 1;">
+                    <i class="fas fa-comment-alt" style="font-size: 1.5rem; margin-bottom: 5px;"></i><span>FEEDBACK</span>
+                </div>
+                <div class="control-item" id="howToUseBtn" style="cursor: pointer; opacity: 1;">
+                    <i class="fas fa-question-circle" style="font-size: 1.5rem; margin-bottom: 5px;"></i><span>GUIDE</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="sidebar-divider">
+
+        <!-- Neural Section -->
+        <div class="sidebar-section neural-section">
+            <div class="energy-core-wrapper" id="energy-core">
+                <div class="core-layer layer-1"></div>
+                <div class="core-layer layer-2"></div>
+                <div class="core-layer layer-3"></div>
+                <div class="core-center"></div>
+            </div>
+            <button type="button" id="talkBtn" class="init-btn" title="Toggle Voice Command" style="width: 100%;">Talk with SISCA</button>
+        </div>
+    </div>
+
+    <!-- New Solid Light Background -->
+    <div class="solid-light-bg"></div>
+
+    <div class="minimal-top-nav">
+    <div id="loggedInActions" style="display: none;">
+        <button id="logoutBtn" class="auth-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+    <div id="authButtonsDiv" style="display: flex; gap: 10px;">
+        <button id="openLoginModal" class="auth-btn signup-btn">Login</button>
+        <button id="openSignupModal" class="auth-btn signup-btn">Sign Up</button>
+    </div>
+</div>
+
+    <!-- Main Centered Layout -->
+    <div class="centered-layout">
         
-        <div class="left-section">
-            <div class="top-panels">
-                
-              <div class="glass-panel auth-panel">
-                    <div class="auth-profile">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    
-                <div class="auth-text" id="currentUserDisplay">Guest Mode</div>
+        <!-- Brand / Logo Area -->
+        <div class="brand-wrapper" id="brandWrapper" style="margin-bottom: 2rem;">
+            <img src="/static/sisca_logo.svg" alt="Sisca AI Logo" class="brand-logo" draggable="true" style="width: 100px; height: 100px;">
+            <h2 style="color: var(--text-dark); font-size: 2.8rem;">Sisca AI</h2>
+        </div>
 
-                <div class="auth-panel-actions" id="loggedInActions" style="display: none;">
-                    <button id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
-
-                <div class="auth-buttons" id="authButtonsDiv">
-
-                        <button class="auth-btn signup-btn" id="openLoginModal">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                        </button>
-                        <button class="auth-btn signup-btn" id="openSignupModal">
-                      <i class="fas fa-user-plus"></i> Sign Up
-                    </button>
-                    </div>
-
-                </div>
-
-                <div class="glass-panel controls-panel">
-
-                   <div class="control-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: center; align-items: end;">
-                        
-                        <!-- NAYA: Unlocked VISUALS Button -->
-                        <div class="control-item" id="visualsBtn" title="Toggle Data Visualization" style="cursor: pointer; opacity: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%;">
-                            <i class="fas fa-toggle-off" style="font-size: 1.7rem; margin-bottom: 5px; transition: all 0.3s;"></i>
-                            <span style="transition: all 0.3s;">VISUALS</span>
-                        </div>
-                        
-                        <div class="control-item" id="connectGmailBtn" style="cursor: pointer; opacity: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%;" title="Connect Gmail">
-                            <i class="fas fa-envelope" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
-                            <span>CONNECT</span>
-                        </div>
-                        
-                        <div class="control-item" id="feedbackBtn" style="cursor: pointer; opacity: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%;">
-                            <i class="fas fa-comment-alt" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
-                            <span>FEEDBACK</span>
-                        </div>
-                        
-                        <div class="control-item" id="howToUseBtn" style="cursor: pointer; opacity: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%;">
-                            <i class="fas fa-question-circle" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
-                            <span>GUIDE</span>
-                        </div>
-                        
-                    </div>
-                </div>
-
-                <div class="glass-panel neural-panel">
-                  <div class="energy-core-wrapper" id="energy-core">
-                        <div class="core-layer layer-1"></div>
-                        <div class="core-layer layer-2"></div>
-                        <div class="core-layer layer-3"></div>
-                        <div class="core-center"></div>
-                    </div>
-                    <button type="button" id="talkBtn" class="init-btn" title="Toggle Voice Command">Talk with SISCA</button>
-                </div>
-
-            </div>
-
-            <div class="glass-panel workspace-panel chat-section" style="padding: 0; padding-top: 1rem;">
-                <div class="chat-tabs">
-                    <button class="tab active"><i class="far fa-comment-alt"></i> CHATS</button>
-                </div>
-
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message assistant-message">
-                        <div class="message-avatar">
-                            <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
-                                <img src="/static/logo.png" alt="Sisca AI" draggable="true">
-                            </a>
-                        </div>
-
-                        <div class="message-wrapper">
-                            <div class="message-content">
-                                <p>Hello! How can I assist you today?</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <form id="chatForm" class="input-area">
-                    <div class="image-preview-area">
-                        <div id="imagePreviewContainer" style="display: none;">
-                            <img id="imagePreview" src="" alt="Preview">
-                            <button type="button" id="removeImageBtn" title="Remove image">&times;</button>
-                        </div>
-                    </div>
-
-                    <div class="input-container-pill">
-    <input type="file" id="imageInput" accept="image/*, .csv, .xlsx, .json, .txt" style="display: none;">
-    <button type="button" id="attachBtn" class="action-icon" title="Upload Image">
-        <i class="fas fa-paperclip"></i>
-    </button>
-
-    <input type="text" id="messageInput" placeholder="Chat with Sisca AI..." autocomplete="off" required>
-
-    <div class="audio-waveform" id="audioWaveform" style="display: none;">
-        <span></span><span></span><span></span><span></span><span></span>
-    </div>
-
-    <div class="mode-selector-wrapper custom-select-wrapper">
-    <!-- Naya Custom Button -->
-    <div class="mode-selector custom-select-btn" id="customModeBtn">
-        <span id="customModeText">Fast</span>
-    </div>
-    <i class="fas fa-chevron-down dropdown-icon"></i>
-    
-    <!-- Custom Dropdown Menu -->
-    <div class="custom-select-menu" id="customModeMenu">
-        <div class="custom-option selected" data-value="fast">Fast</div>
-        <div class="custom-option" data-value="research">Research</div>
-    </div>
-
-    <!-- Hidden Input: Apka purana JS code is ID se value uthata rahay ga -->
-    <input type="hidden" id="chatModeSelector" value="fast">
-</div>
-
-    <button type="submit" class="send-btn" id="sendBtn" title="Send Message">
-        <i class="fas fa-paper-plane"></i>
-    </button>
-    <!-- NAYA: Stop Button (Jo by default hide rahay ga) -->
-    <button type="button" class="send-btn" id="stopBtn" title="Stop Generation" style="display: none; color: #ef4444;">
-        <i class="fas fa-stop-circle"></i>
-    </button>
-</div>
-                    
-                    <div class="ai-disclaimer">
-                        SISCA AI is in Development phase. <strong>Unexpected Errors</strong> may occur.
-                    </div>
-                </form>
-
-            </div> </div> <div class="glass-panel right-brand-panel" style="position: relative;">
+        <!-- Chat Area (Restricted Size) -->
+        <div class="chat-section-centered">
             
-            <div class="brand-wrapper" id="brandWrapper">
-                <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="display: flex; align-items: center; justify-content: center; text-decoration: none; outline: none; cursor: default;">
-                    <img src="/static/logo.png" alt="Sisca AI Logo" class="brand-logo" draggable="true">
-                </a>
-                <h2>Sisca AI</h2>
-                <h4>YOUR AUTONOMOUS ASSISTANT</h4>
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will appear here -->
             </div>
 
-            <div id="rightPanelContent" class="right-panel-content">
-                <button id="closeRightPanel" class="close-panel-btn" title="Close Workspace"><i class="fas fa-times"></i></button>
+            <form id="chatForm" class="input-area-centered">
+                <div class="image-preview-area">
+                    <div id="imagePreviewContainer" style="display: none;">
+                        <img id="imagePreview" src="" alt="Preview">
+                        <button type="button" id="removeImageBtn" title="Remove image">&times;</button>
+                    </div>
+                </div>
+
+                <div class="input-container-pill shadow-pill">
+                    <input type="file" id="imageInput" accept="image/*, .csv, .xlsx, .json, .txt" style="display: none;">
+                    <button type="button" id="attachBtn" class="action-icon" title="Upload Image/Data">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="text" id="messageInput" placeholder="Chat with Sisca AI..." autocomplete="off" required>
+                    
+                    <div class="audio-waveform" id="audioWaveform" style="display: none;">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    
+                    <div class="mode-selector-wrapper custom-select-wrapper">
+                        <div class="mode-selector custom-select-btn" id="customModeBtn">
+                            <span id="customModeText">Fast</span>
+                        </div>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                        <div class="custom-select-menu" id="customModeMenu">
+                            <div class="custom-option selected" data-value="fast">Fast</div>
+                            <div class="custom-option" data-value="research">Research</div>
+                        </div>
+                        <input type="hidden" id="chatModeSelector" value="fast">
+                    </div>
+
+                    <button type="submit" class="send-btn" id="sendBtn" title="Send Message">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                    <button type="button" class="send-btn" id="stopBtn" title="Stop Generation" style="display: none; color: #ef4444;">
+                        <i class="fas fa-stop-circle"></i>
+                    </button>
+                </div>
                 
-                <!-- NAYA: Download PDF Button -->
-                <button id="downloadPdfBtn" class="close-panel-btn" title="Download Report as PDF" style="right: 4.5rem; background: var(--theme-primary); color: white;">
-                    <i class="fas fa-file-pdf"></i>
-                </button>
+                <div class="ai-disclaimer" style="margin-top: 15px;">
+                    SISCA AI is in Development phase. <strong>Unexpected Errors</strong> may occur.
+                </div>
+            </form>
+        </div>
 
-                <div id="rightPanelText" class="right-panel-text"></div>
-                <!-- NAYA: Data Chart Renderer -->
-                <img id="rightPanelChart" src="" alt="Generated Chart" style="display: none; width: 100%; border-radius: 12px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+        <!-- Hidden Document Overlay (Slides up for long reports/charts) -->
+        <div id="rightPanelContent" class="document-overlay">
+            <button id="closeRightPanel" class="close-panel-btn"><i class="fas fa-times"></i></button>
+            <button id="downloadPdfBtn" class="close-panel-btn" style="right: 4.5rem; background: var(--theme-primary); color: white;">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+            <div id="rightPanelText" class="right-panel-text"></div>
+            <img id="rightPanelChart" src="" alt="Generated Chart" style="display: none; width: 100%; border-radius: 12px; margin-top: 15px;">
+        </div>
+
+        <!-- VNC Stream Overlay -->
+        <div id="virtualScreenContent" class="document-overlay" style="background: #1c282d; padding: 0; overflow: hidden; display: none;">
+            <div style="background: rgba(0, 96, 100, 0.9); color: white; padding: 10px 15px; font-size: 0.85rem; font-weight: 600;">
+                <i class="fas fa-desktop" style="margin-right: 5px;"></i> Sisca's PC Live
             </div>
-            <!-- NAYA: Virtual Screen Container (noVNC Iframe) -->
-    <div id="virtualScreenContent" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 1.5rem; overflow: hidden; z-index: 20; background: #1c282d;">
-        <!-- Top Tech Bar -->
-        <div style="background: rgba(0, 96, 100, 0.9); color: white; padding: 6px 15px; font-size: 0.8rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2);">
-            <span><i class="fas fa-desktop" style="margin-right: 5px;"></i> Sisca's PC <span style="font-size: 0.65rem; color:#a5f3fc; margin-left: 5px;">(Live View)</span></span>
-            <div class="typing-dots" style="margin: 0; padding: 0; transform: scale(0.8);"><span></span><span></span><span></span></div>
+            <iframe id="vncStreamFrame" src="" style="width: 100%; height: calc(100% - 38px); border: none;"></iframe>
         </div>
-        <!-- Iframe jo noVNC server se connect hoga -->
-        <iframe id="vncStreamFrame" src="" style="width: 100%; height: calc(100% - 30px); border: none; opacity: 0.95;"></iframe>
+        
     </div>
-</div> <!-- right-brand-panel div closing -->
-        </div>
 
     </div> 
       
@@ -378,6 +350,33 @@
 
 <script>
 
+// ==========================================
+// SIDEBAR TOGGLE LOGIC
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('leftSidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const closeSidebar = document.getElementById('closeSidebar');
+
+    // Open sidebar
+    sidebarToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.add('open');
+    });
+
+    // Close sidebar (Cross Button)
+    closeSidebar.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+    });
+
+    // Close sidebar when clicking outside of it
+    window.addEventListener('click', (e) => {
+        if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target) && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+        }
+    });
+});  
+  
         // === CUSTOM DROPDOWN LOGIC ===
 document.addEventListener('DOMContentLoaded', () => {
     const customModeBtn = document.getElementById('customModeBtn');
@@ -627,6 +626,17 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
         `;
     }
 
+    // NAYA LOGIC: Logout par logo wapas animation k sath show kar do
+    const topBrandWrapper = document.getElementById('brandWrapper');
+    if (topBrandWrapper) {
+        topBrandWrapper.style.display = 'flex'; // Pehle layout mein jagah wapas layein
+        
+        // Halka sa delay de kar show-tech class apply karein taake animation smoothly chale
+        setTimeout(() => {
+            topBrandWrapper.classList.remove('hide-tech');
+            topBrandWrapper.classList.add('show-tech');
+        }, 50); 
+    }
     const rightPanelContent = document.getElementById('rightPanelContent');
     const brandWrapper = document.getElementById('brandWrapper');
     if (rightPanelContent && rightPanelContent.classList.contains('show')) {
@@ -1166,6 +1176,15 @@ const chatForm = document.getElementById('chatForm');
             event.preventDefault();
             
             if (currentAbortController !== null) return;
+            // NAYA LOGIC: Jese hi send dabayein, logo fauran animation k sath gayab ho jaye
+            const topBrandWrapper = document.getElementById('brandWrapper');
+            if (topBrandWrapper && topBrandWrapper.style.display !== 'none') {
+                topBrandWrapper.classList.remove('show-tech');
+                topBrandWrapper.classList.add('hide-tech');
+                setTimeout(() => {
+                    topBrandWrapper.style.display = 'none';
+                }, 400); // 0.4s animation k baad mukammal hide
+            }
             const message = messageInput.value;
             const imageBase64 = selectedImageBase64;
             const dataFile = selectedDataFile; // NAYA FIX: File tracker variable ko assign karein taake JS crash na ho
@@ -1350,6 +1369,17 @@ const chatForm = document.getElementById('chatForm');
                     await addMessage('An error occurred connecting to the server.', 'assistant', false);
                 }
                 unlockUI();
+            }
+            // NAYA LOGIC: Chat start hoty hi main logo ko animation k sath hide karein
+            if (topBrandWrapper && topBrandWrapper.style.display !== 'none') {
+                // Pehle animation class apply karein
+                topBrandWrapper.classList.remove('show-tech');
+                topBrandWrapper.classList.add('hide-tech');
+                
+                // 500ms (0.5s) wait karein taake animation poori ho jaye, phir jagah free karein
+                setTimeout(() => {
+                    topBrandWrapper.style.display = 'none';
+                }, 500);
             }
         });
 
