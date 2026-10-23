@@ -97,9 +97,6 @@
     <div class="solid-light-bg"></div>
 
     <div class="minimal-top-nav">
-    <div id="topLoggedInActions" style="display: none;">
-        <button id="topLogoutBtn" class="auth-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-    </div>
     <div id="topAuthButtonsDiv" style="display: flex; gap: 10px;">
         <button id="topOpenLoginModal" class="auth-btn signup-btn">Login</button>
         <button id="topOpenSignupModal" class="auth-btn signup-btn">Sign Up</button>
@@ -528,7 +525,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         
         const loggedInActions = document.getElementById('loggedInActions');
         if (loggedInActions) loggedInActions.style.display = 'flex';
-        document.getElementById('topLoggedInActions').style.display = 'flex';
         
         if (authProfileIcon) authProfileIcon.classList.add('logged-in'); 
         
@@ -598,7 +594,6 @@ async function handleLogout() {
     
     const loggedInActions = document.getElementById('loggedInActions');
     if (loggedInActions) loggedInActions.style.display = 'none';
-    document.getElementById('topLoggedInActions').style.display = 'none';
     
     const authProfileIcon = document.querySelector('.auth-profile');
     if (authProfileIcon) authProfileIcon.classList.remove('logged-in');
@@ -618,7 +613,7 @@ async function handleLogout() {
             <div class="message assistant-message">
                 <div class="message-avatar">
                     <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
-                        <img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true">
+                        <img src="/static/logo.png" alt="Sisca AI" draggable="true">
                     </a>
                 </div>
                 <div class="message-wrapper">
@@ -663,10 +658,7 @@ async function handleLogout() {
 
     alert('Logged out successfully!');
 }
-['logoutBtn', 'topLogoutBtn'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) btn.addEventListener('click', handleLogout);
-});
+document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
 
 // ====== CONNECT GMAIL MODAL LOGIC ======
@@ -1402,7 +1394,7 @@ const chatForm = document.getElementById('chatForm');
             
             let avatarHTML = '';
             if (sender === 'assistant') {
-                avatarHTML = `<div class="message-avatar"><a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;"><img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true"></a></div>`;
+                avatarHTML = `<div class="message-avatar"><a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;"><img src="/static/logo.png" alt="Sisca AI" draggable="true"></a></div>`;
             }
             let imageHTML = '';
             if (imageBase64) {
@@ -1456,7 +1448,7 @@ const chatForm = document.getElementById('chatForm');
             typingDiv.innerHTML = `
                 <div class="message-avatar">
                     <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
-                        <img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true">
+                        <img src="/static/logo.png" alt="Sisca AI" draggable="true">
                     </a>
                 </div>
                 <div class="message-wrapper">
