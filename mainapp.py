@@ -38,6 +38,9 @@ from functools import wraps
 from collections import defaultdict, deque
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from markupsafe import escape
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -204,8 +207,8 @@ def password_error(pw):
 
 # ---- Google OAuth: client secret kabhi DB/code me nahi, sirf env ya client_secret.json (gitignored) se ----
 def _google_client_credentials():
-    cid = os.environ.get("GOOGLE_CLIENT_ID")
-    csec = os.environ.get("GOOGLE_CLIENT_SECRET")
+    cid = os.environ.get("CLIENT_ID")
+    csec = os.environ.get("CLIENT_SECRET")
     if cid and csec:
         return cid, csec
     path = os.path.join(BASE_DIR, "client_secret.json")
@@ -215,7 +218,7 @@ def _google_client_credentials():
         cfg = cfg.get("web") or cfg.get("installed") or {}
         if cfg.get("client_id") and cfg.get("client_secret"):
             return cfg["client_id"], cfg["client_secret"]
-    raise RuntimeError("Google OAuth client is not configured (set GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).")
+    raise RuntimeError("Google OAuth client is not configured (set CLIENT_ID / CLIENT_SECRET).")
 
 
 def build_oauth_flow(redirect_uri, state=None):
