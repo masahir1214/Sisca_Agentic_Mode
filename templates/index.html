@@ -9,7 +9,7 @@
     
     <!-- NAYA: PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link rel="icon" type="image/png" href="/static/sisca_logo.svg">
     <link rel="stylesheet" href="/static/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -24,7 +24,7 @@
 <body>
 
     <div id="mobile-blocker">
-        <img src="/static/logo.png" alt="Sisca AI Logo" style="width: 80px; margin-bottom: 20px;">
+        <img src="/static/sisca_logo.svg" alt="Sisca AI Logo" style="width: 80px; margin-bottom: 20px;">
         <h1>Desktop Only Access</h1>
         <p>Sisca AI is not accessable on mobile. For the full experience, please switch to <strong>Desktop</strong>.</p>
     </div>
@@ -175,7 +175,7 @@
         </div>
 
         <!-- VNC Stream Overlay -->
-        <div id="virtualScreenContent" class="document-overlay" style="background: #1c282d; padding: 0; overflow: hidden; display: none;">
+        <div id="virtualScreenContent" class="document-overlay side-panel" style="background: #1c282d; padding: 0; overflow: hidden; display: none;">
             <div style="background: rgba(0, 96, 100, 0.9); color: white; padding: 10px 15px; font-size: 0.85rem; font-weight: 600;">
                 <i class="fas fa-desktop" style="margin-right: 5px;"></i> Sisca's PC Live
             </div>
@@ -366,8 +366,9 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.remove('open');
     });
 
-    // Close sidebar when clicking outside of it
+    // Close sidebar when clicking outside of it (sirf chhoti screens par)
     window.addEventListener('click', (e) => {
+        if (window.innerWidth > 900) return; // Desktop: sidebar docked rehta hai, chat ke saath khula rahe
         if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target) && sidebar.classList.contains('open')) {
             sidebar.classList.remove('open');
         }
@@ -613,7 +614,7 @@ async function handleLogout() {
             <div class="message assistant-message">
                 <div class="message-avatar">
                     <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
-                        <img src="/static/logo.png" alt="Sisca AI" draggable="true">
+                        <img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true">
                     </a>
                 </div>
                 <div class="message-wrapper">
@@ -1074,6 +1075,53 @@ const chatForm = document.getElementById('chatForm');
                 .replace(/\n/g, '<br>');
         }
 
+        // ====== Research side panel helpers ======
+        function openLiveScreen() {
+            const vs = document.getElementById('virtualScreenContent');
+            const frame = document.getElementById('vncStreamFrame');
+            vs.style.display = 'block';
+            requestAnimationFrame(() => vs.classList.add('show'));
+            // Dynamic Hostname fetch karke port 6080 par noVNC connect karein
+            frame.src = `http://${window.location.hostname}:6080/vnc.html?autoconnect=true&resize=scale`;
+        }
+
+        function closeLiveScreen() {
+            const vs = document.getElementById('virtualScreenContent');
+            vs.classList.remove('show');
+            vs.style.display = 'none';
+            document.getElementById('vncStreamFrame').src = "";
+        }
+
+        // Headings (#), bullets (-), **bold** ko panel me properly render karta hai
+        function formatReport(text) {
+            if (!text) return "";
+            const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            let html = '', inList = false;
+            const closeList = () => { if (inList) { html += '</ul>'; inList = false; } };
+
+            for (const raw of text.split('\n')) {
+                const line = raw.trimEnd();
+                let m;
+                if ((m = line.match(/^\s*(#{1,6})\s+(.+)$/))) {
+                    closeList();
+                    const tag = m[1].length === 1 ? 'h2' : (m[1].length === 2 ? 'h3' : 'h4');
+                    html += `<${tag}>${inline(m[2])}</${tag}>`;
+                } else if ((m = line.match(/^\s*[-*\u2022]\s+(.+)$/))) {
+                    if (!inList) { html += '<ul>'; inList = true; }
+                    html += `<li>${inline(m[1])}</li>`;
+                } else if (line.trim() === '') {
+                    closeList();
+                    html += '<div class="rp-gap"></div>';
+                } else {
+                    closeList();
+                    html += `<div class="rp-line">${inline(line)}</div>`;
+                }
+            }
+            closeList();
+            return html;
+        }
+
         // ==========================================
         // 1. GLOBAL STATE MANAGERS (Audio, Typing, Limits)
         // ==========================================
@@ -1157,8 +1205,7 @@ const chatForm = document.getElementById('chatForm');
             }
 
             // Stream framework cleanly collapse
-            document.getElementById('virtualScreenContent').style.display = 'none';
-            document.getElementById('vncStreamFrame').src = "";
+            closeLiveScreen();
             
             // --- BUG FIX: Clear Data Panel AND bring back the Logo cleanly ---
             const rightPanel = document.getElementById('rightPanelContent');
@@ -1243,11 +1290,7 @@ const chatForm = document.getElementById('chatForm');
                 brand.classList.remove('show-tech');
                 brand.classList.add('hide-tech'); // Logo hide karein
                 
-                const vsContent = document.getElementById('virtualScreenContent');
-                const vncFrame = document.getElementById('vncStreamFrame');
-                vsContent.style.display = 'block';
-                // Dynamic Hostname fetch karke port 6080 par noVNC connect karein
-                vncFrame.src = `http://${window.location.hostname}:6080/vnc.html?autoconnect=true&resize=scale`;
+                openLiveScreen();
             }
             // ---------------------------------------------------------------------
 
@@ -1296,21 +1339,32 @@ const chatForm = document.getElementById('chatForm');
                         tasks.push(addMessage("Data Analysis complete. Chart displayed on the workspace.", 'assistant', false));
                         
                         // --- BUG FIX: Hide VNC Screen immediately so the chart is visible! ---
-                        document.getElementById('virtualScreenContent').style.display = 'none';
-                        document.getElementById('vncStreamFrame').src = "";
+                        closeLiveScreen();
                         
-                        displayInRightPanel(data.response, data.chart_url);
+                        displayInRightPanel(data.response, data.chart_url, isAgentActive);
                         if (data.audio) tasks.push(playAudio(data.audio));
                         await Promise.all(tasks);
                         unlockUI();
                     } 
+                    else if (isAgentActive && (lineCount > 5 || data.response.length > 250)) {
+                        // RESEARCH MODE: sirf bara jawab right side panel me (chota jawab normal chat me)
+                        const tasks = [];
+                        tasks.push(addMessage("Research complete. Results are shown in the side panel.", 'assistant', false));
+                        closeLiveScreen();
+                        displayInRightPanel(data.response, null, true);
+                        if (data.audio) tasks.push(playAudio(data.audio));
+                        if (data.action === 'open_url' && data.url) {
+                            window.open(data.url, '_blank');
+                        }
+                        await Promise.all(tasks);
+                        unlockUI();
+                    }
                     else if (lineCount > 5 || data.response.length > 250) {
                         const tasks = [];
                         tasks.push(addMessage("Document generated. Displayed on the main workspace.", 'assistant', false));
                         
                         // --- BUG FIX: Hide VNC Screen immediately so the document is visible! ---
-                        document.getElementById('virtualScreenContent').style.display = 'none';
-                        document.getElementById('vncStreamFrame').src = "";
+                        closeLiveScreen();
                         
                         displayInRightPanel(data.response);
                         
@@ -1337,8 +1391,7 @@ const chatForm = document.getElementById('chatForm');
                         await Promise.all(tasks);
                         
                         // --- BUG FIX: Teardown VNC Sandbox for Short Responses & Prevent Overlap ---
-                        document.getElementById('virtualScreenContent').style.display = 'none';
-                        document.getElementById('vncStreamFrame').src = "";
+                        closeLiveScreen();
                         
                         const rightPanel = document.getElementById('rightPanelContent');
                         const brandWrap = document.getElementById('brandWrapper');
@@ -1358,8 +1411,7 @@ const chatForm = document.getElementById('chatForm');
 
                 // --- NAYI LOGIC: Agar error aye tab bhi screen band kar dein ---
                 if (isAgentActive) {
-                    document.getElementById('virtualScreenContent').style.display = 'none';
-                    document.getElementById('vncStreamFrame').src = "";
+                    closeLiveScreen();
                     document.getElementById('brandWrapper').classList.remove('hide-tech');
                     document.getElementById('brandWrapper').classList.add('show-tech');
                 }
@@ -1394,7 +1446,7 @@ const chatForm = document.getElementById('chatForm');
             
             let avatarHTML = '';
             if (sender === 'assistant') {
-                avatarHTML = `<div class="message-avatar"><a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;"><img src="/static/logo.png" alt="Sisca AI" draggable="true"></a></div>`;
+                avatarHTML = `<div class="message-avatar"><a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;"><img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true"></a></div>`;
             }
             let imageHTML = '';
             if (imageBase64) {
@@ -1448,7 +1500,7 @@ const chatForm = document.getElementById('chatForm');
             typingDiv.innerHTML = `
                 <div class="message-avatar">
                     <a href="https://siscaai.online" target="_blank" onclick="event.preventDefault();" style="cursor: default; display: flex;">
-                        <img src="/static/logo.png" alt="Sisca AI" draggable="true">
+                        <img src="/static/sisca_logo.svg" alt="Sisca AI" draggable="true">
                     </a>
                 </div>
                 <div class="message-wrapper">
@@ -1565,7 +1617,8 @@ const rightPanelContent = document.getElementById('rightPanelContent');
 const rightPanelText = document.getElementById('rightPanelText');
 const closeRightPanel = document.getElementById('closeRightPanel');
 
-function displayInRightPanel(text, chartUrl = null) {
+function displayInRightPanel(text, chartUrl = null, asSide = false) {
+    rightPanelContent.classList.toggle('side-panel', asSide);
     // Logo ko cool animation k sath blur karke hide karein
     brandWrapper.classList.remove('show-tech');
     brandWrapper.classList.add('hide-tech');
@@ -1591,7 +1644,7 @@ function displayInRightPanel(text, chartUrl = null) {
         const interval = setInterval(() => {
             if (i < words.length) {
                 currentText += words[i] + ' ';
-                rightPanelText.innerHTML = formatText(currentText); 
+                rightPanelText.innerHTML = formatReport(currentText); 
                 i++;
                 rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
             } else {
