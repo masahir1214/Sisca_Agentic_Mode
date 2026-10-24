@@ -1,0 +1,1060 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..6b5aa4e
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,16 @@
++# Copy these names into your hosting dashboard (Render etc.) or your shell environment.
++# NEVER put real values in this file or commit them.
++
++SECRET_KEY=                 # long random string: python -c "import secrets; print(secrets.token_hex(32))"
++DATABASE_URL=               # Supabase/Postgres connection string
++GOOGLE_CLIENT_ID=
++GOOGLE_CLIENT_SECRET=
++GEMINI_API_KEYS=
++GROQ_API_KEYS=
++SISCA_EMAIL_PASS=
++
++SESSION_COOKIE_SECURE=1     # 1 when served over https
++TRUST_PROXY=0               # 1 only if behind a trusted reverse proxy (Render/nginx)
++CORS_ORIGINS=https://siscaai.online
++FLASK_DEBUG=0               # never 1 in production
++VNC_BIND=127.0.0.1          # docker-compose: noVNC bind address
+diff --git a/.gitignore b/.gitignore
+index 01bf8f4..89d31a7 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -23,3 +23,16 @@ __pycache__/
+ *.pyc
+ .DS_Store
+ .vscode/
++
++# more secrets / databases (never commit)
++.env
++.env.*
++!.env.example
++*.db
++*.sqlite
++*.sqlite3
++client_secret*.json
++credentials.json
++token.json
++*.pem
++*.key
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 58f2eba..105b663 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -4,8 +4,9 @@ services:
+     container_name: sisca_agent_sandbox
+     restart: unless-stopped
+     ports:
+-      # Expose noVNC port to host machine
+-      - "6080:6080"
++      # SECURITY: noVNC (bina password) default me sirf localhost par. Remote server par
++      # VNC_BIND=0.0.0.0 tabhi karein jab firewall / authenticated reverse-proxy lagi ho.
++      - "${VNC_BIND:-127.0.0.1}:6080:6080"
+     shm_size: '2gb'
+     # --- NAYA: Bypass Docker Security for Chromium Sandbox ---
+     cap_add:
+diff --git a/mainapp.py b/mainapp.py
+index 02c544b..a96a8c9 100644
+--- a/mainapp.py
++++ b/mainapp.py
+@@ -32,6 +32,12 @@ import time
+ import subprocess
+ import csv
+ from urllib.parse import quote_plus
++import secrets
++import hmac
++from functools import wraps
++from collections import defaultdict, deque
++from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
++from markupsafe import escape
+ 
+ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+ 
+@@ -51,13 +57,189 @@ print(f"System Check: Outputs mapped to -> {OUTPUTS_DIR}")
+ print("Starting Sisca AI Server...")
+ 
+ 
+-pending_otps = {}
+ app = Flask(__name__)
+-app.secret_key = os.environ.get("SECRET_KEY", "sisca_ai_super_secret")
+-CORS(app)
+-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
++
++# ===============================
++# SECURITY CONFIG
++# ===============================
++_secret = os.environ.get("SECRET_KEY")
++if not _secret:
++    # Koi known/default key kabhi use nahi hoti. Production me SECRET_KEY zaroor set karein.
++    _secret = secrets.token_hex(32)
++    print("SECURITY WARNING: SECRET_KEY env var is not set. Using a temporary random key (logins reset on restart).")
++app.secret_key = _secret
++app.config.update(
++    SESSION_COOKIE_HTTPONLY=True,
++    SESSION_COOKIE_SAMESITE="Lax",
++    SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "0") == "1",
++    PERMANENT_SESSION_LIFETIME=timedelta(days=14),
++    MAX_CONTENT_LENGTH=30 * 1024 * 1024,  # 30 MB se bari requests reject
++)
++_cors_origins = [o.strip() for o in os.environ.get(
++    "CORS_ORIGINS", "https://siscaai.online,http://localhost:5000,http://127.0.0.1:5000").split(",") if o.strip()]
++CORS(app, origins=_cors_origins)
+ chat_histories = {}
+ 
++TRUST_PROXY = os.environ.get("TRUST_PROXY", "0") == "1"
++GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.send']
++approval_serializer = URLSafeTimedSerializer(app.secret_key, salt="approve-test-user")
++
++
++def client_ip():
++    """Real client IP. Proxy (Render/nginx) ke peeche ho to TRUST_PROXY=1 set karein."""
++    if TRUST_PROXY:
++        fwd = request.headers.get("X-Forwarded-For", "")
++        if fwd:
++            return fwd.split(",")[0].strip()
++    return str(request.remote_addr)
++
++
++def current_user_email():
++    """Logged-in user ki email SIRF server-side session se. Client ka bheja hua email kabhi trust nahi hota."""
++    return session.get("user_email")
++
++
++def history_key_for(user_email):
++    """Har guest ki alag chat memory (pehle sab guests ek hi 'guest' history share karte thay)."""
++    if user_email and user_email != "guest":
++        return user_email
++    if "gid" not in session:
++        session["gid"] = secrets.token_hex(8)
++    return "guest:" + session["gid"]
++
++
++# ---- Rate limiting (in-memory, per process) ----
++_rate_hits = defaultdict(deque)
++_rate_lock = threading.Lock()
++
++
++def _hit(key, max_calls, per_seconds):
++    now = time.time()
++    with _rate_lock:
++        if len(_rate_hits) > 20000:
++            for k in [k for k, q in _rate_hits.items() if not q or now - q[-1] > 3600]:
++                del _rate_hits[k]
++        q = _rate_hits[key]
++        while q and now - q[0] > per_seconds:
++            q.popleft()
++        if len(q) >= max_calls:
++            return False, int(per_seconds - (now - q[0])) + 1
++        q.append(now)
++        return True, 0
++
++
++def rate_limit(max_calls, per_seconds):
++    def deco(fn):
++        @wraps(fn)
++        def wrapper(*args, **kwargs):
++            allowed, retry = _hit((fn.__name__, client_ip()), max_calls, per_seconds)
++            if not allowed:
++                resp = jsonify({"error": "Too many attempts. Please try again later."})
++                resp.status_code = 429
++                resp.headers["Retry-After"] = str(retry)
++                return resp
++            return fn(*args, **kwargs)
++        return wrapper
++    return deco
++
++
++# ---- OTP store (secure random, 10 min expiry, max 5 wrong tries, 60s resend cooldown) ----
++OTP_TTL = 600
++OTP_MAX_WRONG = 5
++OTP_RESEND_COOLDOWN = 60
++_otp_store = {}
++_otp_lock = threading.Lock()
++
++
++def issue_otp(purpose, email):
++    """New OTP banata hai. Cooldown ke andar dobara maange to None return karta hai."""
++    key = (purpose, email.lower())
++    now = time.time()
++    with _otp_lock:
++        for k in [k for k, v in _otp_store.items() if v["expires"] < now]:
++            del _otp_store[k]
++        old = _otp_store.get(key)
++        if old and now - old["sent_at"] < OTP_RESEND_COOLDOWN:
++            return None
++        code = f"{secrets.randbelow(1000000):06d}"
++        _otp_store[key] = {"code": code, "expires": now + OTP_TTL, "wrong": 0, "sent_at": now}
++        return code
++
++
++def check_otp(purpose, email, code):
++    key = (purpose, email.lower())
++    now = time.time()
++    with _otp_lock:
++        rec = _otp_store.get(key)
++        if not rec or rec["expires"] < now:
++            _otp_store.pop(key, None)
++            return False
++        if hmac.compare_digest(rec["code"], str(code)):
++            return True
++        rec["wrong"] += 1
++        if rec["wrong"] >= OTP_MAX_WRONG:
++            del _otp_store[key]
++        return False
++
++
++def clear_otp(purpose, email):
++    with _otp_lock:
++        _otp_store.pop((purpose, email.lower()), None)
++
++
++# ---- Input validation ----
++def valid_email(e):
++    return bool(e) and len(e) <= 254 and re.match(r'^[^@\s<>"\',;]+@[^@\s<>"\',;]+\.[^@\s<>"\',;]+$', e) is not None
++
++
++def password_error(pw):
++    if len(pw) < 8:
++        return "Password must be at least 8 characters long."
++    if len(pw) > 128:
++        return "Password is too long."
++    if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$', pw):
++        return "Password must contain at least one uppercase, lowercase, and a number."
++    return None
++
++
++# ---- Google OAuth: client secret kabhi DB/code me nahi, sirf env ya client_secret.json (gitignored) se ----
++def _google_client_credentials():
++    cid = os.environ.get("GOOGLE_CLIENT_ID")
++    csec = os.environ.get("GOOGLE_CLIENT_SECRET")
++    if cid and csec:
++        return cid, csec
++    path = os.path.join(BASE_DIR, "client_secret.json")
++    if os.path.exists(path):
++        with open(path, "r", encoding="utf-8") as f:
++            cfg = json.load(f)
++        cfg = cfg.get("web") or cfg.get("installed") or {}
++        if cfg.get("client_id") and cfg.get("client_secret"):
++            return cfg["client_id"], cfg["client_secret"]
++    raise RuntimeError("Google OAuth client is not configured (set GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).")
++
++
++def build_oauth_flow(redirect_uri, state=None):
++    cid, csec = _google_client_credentials()
++    if "localhost" in redirect_uri or "127.0.0.1" in redirect_uri:
++        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # sirf local http testing ke liye
++    config = {"web": {
++        "client_id": cid, "client_secret": csec,
++        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
++        "token_uri": "https://oauth2.googleapis.com/token",
++        "redirect_uris": [redirect_uri],
++    }}
++    return Flow.from_client_config(config, scopes=GMAIL_SCOPES, state=state, redirect_uri=redirect_uri)
++
++
++def load_google_credentials(token_json):
++    """DB me sirf user ke tokens hain; client_id/secret hamesha config se aate hain."""
++    info = json.loads(token_json)
++    cid, csec = _google_client_credentials()
++    info["client_id"] = cid
++    info["client_secret"] = csec
++    info.setdefault("token_uri", "https://oauth2.googleapis.com/token")
++    return Credentials.from_authorized_user_info(info, GMAIL_SCOPES)
++
+ # ===============================
+ # DATABASE SETUP
+ # ===============================
+@@ -308,8 +490,7 @@ def _deliver_email(user_email, to_email: str, subject: str, body: str, chart_ima
+             conn.close()
+             if not row or not row[0]: return "System Notification: Explicitly tell the user that their Gmail is not integrated."
+ 
+-            cred_dict = json.loads(row[0])
+-            creds = Credentials.from_authorized_user_info(cred_dict, ['https://www.googleapis.com/auth/gmail.send'])
++            creds = load_google_credentials(row[0])
+             service = build('gmail', 'v1', credentials=creds)
+ 
+             raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
+@@ -321,16 +502,11 @@ def _deliver_email(user_email, to_email: str, subject: str, body: str, chart_ima
+ 
+ def send_email(to_email: str, subject: str, body: str, chart_image_url: str = ""):
+     # AI tool wrapper (same signature as before): reads the logged-in user from the HTTP request.
+-    try:
+-        data = request.get_json() or {}
+-    except Exception as e:
+-        return f"System Notification: Email failed to send. Error: {e}."
+-    return _deliver_email(data.get("user_email"), to_email, subject, body, chart_image_url)
++    return _deliver_email(current_user_email(), to_email, subject, body, chart_image_url)
+ 
+ # --- NAYA TOOL: Schedule Email ---
+ def schedule_email(to_email: str, subject: str, body: str, scheduled_time: str):
+-    data = request.get_json() or {}
+-    user_email = data.get("user_email")
++    user_email = current_user_email()
+     
+     if not user_email:
+         return "System Notification: Tell the user they must be logged in to schedule emails."
+@@ -528,34 +704,35 @@ def db_heartbeat():
+         conn.close()
+         return "Database is alive!", 200
+     except Exception as e:
+-        return f"Database Error: {str(e)}", 500
++        print(f"Heartbeat error: {e}")
++        return "Database Error", 500
+ 
+ @app.route('/authorize')
+ def authorize():
+-    email = request.args.get('email')
+-    if not email: return "Email is required to connect Gmail."
++    # Identity server-side session se aati hai, ?email= parameter ab ignore hota hai
++    email = current_user_email()
++    if not email:
++        return redirect('/auth')
+     session['oauth_email'] = email
+-    
++
+     redirect_uri = url_for('oauth2callback', _external=True)
+     if "localhost" not in redirect_uri and "127.0.0.1" not in redirect_uri:
+         redirect_uri = redirect_uri.replace("http://", "https://")
+ 
+-    flow = Flow.from_client_secrets_file(
+-        'client_secret.json',
+-        scopes=['https://www.googleapis.com/auth/gmail.send'],
+-        redirect_uri=redirect_uri
+-    )
+-    
++    try:
++        flow = build_oauth_flow(redirect_uri)
++    except Exception as e:
++        print(f"OAuth setup error: {e}")
++        return "Gmail integration is not configured on the server.", 500
++
+     # Removed the PKCE challenge method
+     authorization_url, state = flow.authorization_url(
+-        access_type='offline', 
+-        include_granted_scopes='true', 
++        access_type='offline',
++        include_granted_scopes='true',
+         prompt='consent'
+     )
+-    
++
+     session['oauth_state'] = state
+-    # STRIPPED OUT: session['oauth_code_verifier'] = flow.code_verifier 
+-    
+     return redirect(authorization_url)
+ 
+ 
+@@ -563,37 +740,42 @@ def authorize():
+ def oauth2callback():
+     state = session.get('oauth_state')
+     email = session.get('oauth_email')
+-    
+-    # STRIPPED OUT: code_verifier check
+-    if not state or not email: 
++
++    # Sirf wahi logged-in user apna Gmail connect kar sakta hai jis ne process shuru kiya
++    if not state or not email or email != current_user_email():
+         return "Session expired. Please try connecting again."
+-        
++
+     redirect_uri = url_for('oauth2callback', _external=True)
+     if "localhost" not in redirect_uri and "127.0.0.1" not in redirect_uri:
+         redirect_uri = redirect_uri.replace("http://", "https://")
+-        
+-    flow = Flow.from_client_secrets_file(
+-        'client_secret.json', 
+-        scopes=['https://www.googleapis.com/auth/gmail.send'],
+-        state=state, 
+-        redirect_uri=redirect_uri
+-    )
+-    
+-    auth_response = request.url
+-    if "localhost" not in auth_response and "127.0.0.1" not in auth_response:
+-        auth_response = auth_response.replace("http://", "https://")
+-        
+-    flow.fetch_token(authorization_response=auth_response)
+-    credentials = flow.credentials
+-    
+-    cred_dict = {'token': credentials.token, 'refresh_token': credentials.refresh_token, 'token_uri': credentials.token_uri, 'client_id': credentials.client_id, 'client_secret': credentials.client_secret, 'scopes': credentials.scopes}
+-    
++
++    try:
++        flow = build_oauth_flow(redirect_uri, state=state)
++
++        auth_response = request.url
++        if "localhost" not in auth_response and "127.0.0.1" not in auth_response:
++            auth_response = auth_response.replace("http://", "https://")
++
++        flow.fetch_token(authorization_response=auth_response)
++        credentials = flow.credentials
++    except Exception as e:
++        print(f"OAuth callback error: {e}")
++        return "Google authorization failed. Please try connecting again."
++
++    # SECURITY: client_id / client_secret / token_uri DB me save nahi hotay (sirf user ke tokens).
++    cred_dict = {
++        'token': credentials.token,
++        'refresh_token': credentials.refresh_token,
++        'scopes': list(credentials.scopes or GMAIL_SCOPES),
++    }
++
+     conn = get_db_connection()
+     c = conn.cursor()
+     c.execute("UPDATE users SET google_token = %s WHERE email = %s", (json.dumps(cred_dict), email))
+     conn.commit()
+     conn.close()
+-    
++
++    session.pop('oauth_state', None)
+     return redirect('/?gmail_connected=true')
+ 
+ # ===============================
+@@ -772,11 +954,12 @@ def execute_data_interpreter(query, filename):
+         return f"System Thread Failure: {str(e)}", None
+ 
+ def process_with_gemini(user_message, image_base64=None, data_file=None, user_email="guest", is_voice=False, is_agent_active=False):
++    hkey = history_key_for(user_email)   # har guest/user ki alag chat memory
+     
+-    if user_email not in chat_histories:
+-        chat_histories[user_email] = []
++    if hkey not in chat_histories:
++        chat_histories[hkey] = []
+         
+-    current_history = chat_histories[user_email]
++    current_history = chat_histories[hkey]
+     current_sys_prompt = get_system_prompt(is_voice, is_agent_active, user_email)
+     
+     # ---------------------------------------------------------
+@@ -808,10 +991,10 @@ def process_with_gemini(user_message, image_base64=None, data_file=None, user_em
+                 
+                 if getattr(response, "function_calls", None):
+                     tool_result = handle_tool_call(response.function_calls[0], chat, key)
+-                    chat_histories[user_email] = chat.get_history() 
++                    chat_histories[hkey] = chat.get_history()
+                     return tool_result, None
+ 
+-                chat_histories[user_email] = chat.get_history()
++                chat_histories[hkey] = chat.get_history()
+                 return {"action": "speak", "response": response.text if getattr(response, "text", None) else str(response)}, None
+ 
+             except Exception as e:
+@@ -866,8 +1049,8 @@ def process_with_gemini(user_message, image_base64=None, data_file=None, user_em
+                 )
+                 groq_response = completion.choices[0].message.content
+                 
+-                chat_histories[user_email].append(types.Content(role="user", parts=[types.Part.from_text(text=user_message)]))
+-                chat_histories[user_email].append(types.Content(role="model", parts=[types.Part.from_text(text=groq_response)]))
++                chat_histories[hkey].append(types.Content(role="user", parts=[types.Part.from_text(text=user_message)]))
++                chat_histories[hkey].append(types.Content(role="model", parts=[types.Part.from_text(text=groq_response)]))
+                 
+                 return {"action": "speak", "response": groq_response}, None
+             except Exception as e:
+@@ -932,8 +1115,8 @@ def process_with_gemini(user_message, image_base64=None, data_file=None, user_em
+             # Provide exact dataset name for the Subject line and clean chart URL for embedding
+             ai_memory_text = f"DATASET NAME: {data_file}\nDATA ANALYSIS REPORT GENERATED:\n{summary}\nCHART_IMAGE_URL: {chart_url}"
+             
+-            chat_histories[user_email].append(types.Content(role="user", parts=[types.Part.from_text(text=user_message)]))
+-            chat_histories[user_email].append(types.Content(role="model", parts=[types.Part.from_text(text=ai_memory_text)]))
++            chat_histories[hkey].append(types.Content(role="user", parts=[types.Part.from_text(text=user_message)]))
++            chat_histories[hkey].append(types.Content(role="model", parts=[types.Part.from_text(text=ai_memory_text)]))
+             
+             # --- NAYA FIX 2: Data -> Action Chaining (Auto-Email) ---
+             action_keywords = ["send", "email", "bhej", "schedule", "forward", "mail"]
+@@ -1036,7 +1219,10 @@ def process_with_gemini(user_message, image_base64=None, data_file=None, user_em
+ # ROUTES
+ # ===============================
+ 
++ALLOWED_UPLOAD_EXT = {'.csv', '.xlsx', '.xls', '.json', '.txt', '.png', '.jpg', '.jpeg', '.gif', '.webp'}
++
+ @app.route("/api/upload-data", methods=["POST"])
++@rate_limit(30, 3600)
+ def upload_data():
+     if 'file' not in request.files:
+         return jsonify({"error": "No file part"}), 400
+@@ -1046,55 +1232,66 @@ def upload_data():
+     
+     # NAYA FIX: File name ko secure karein taake Path Traversal attack na ho sakay
+     filename = secure_filename(file.filename)
++    if not filename or os.path.splitext(filename)[1].lower() not in ALLOWED_UPLOAD_EXT:
++        return jsonify({"error": "This file type is not allowed."}), 400
+     filepath = os.path.join(UPLOADS_DIR, filename)
+     file.save(filepath)
+     return jsonify({"success": True, "filename": filename})
+ 
+ @app.route("/api/feedback", methods=["POST"])
++@rate_limit(5, 3600)
+ def feedback():
+     try:
+-        data = request.get_json() or {}
+-        feedback_text = data.get("text", "").strip()
+-        user_email = data.get("user_email", "").strip() # Frontend se email aayegi
+-        
++        data = request.get_json(silent=True) or {}
++        feedback_text = str(data.get("text", "")).strip()[:2000]
++        user_email = current_user_email()  # client ka bheja hua email ignore hota hai
++
+         if not feedback_text:
+             return jsonify({"error": "Feedback text is empty."}), 400
+ 
+         if feedback_text.startswith("TEST USER REQUEST:"):
++            if not user_email:
++                return jsonify({"error": "Please login first."}), 401
++
+             # 1. Database me status '1' (Requested) kar dein
+-            if user_email:
+-                conn = get_db_connection()
+-                c = conn.cursor()
+-                c.execute("UPDATE users SET test_status = 1 WHERE email = %s", (user_email,))
+-                conn.commit()
+-                conn.close()
+-            
+-            # 2. Email me Approve ka Link bhjy ga
++            conn = get_db_connection()
++            c = conn.cursor()
++            c.execute("UPDATE users SET test_status = 1 WHERE email = %s", (user_email,))
++            conn.commit()
++            conn.close()
++
++            # 2. Email me SIGNED Approve link bhjy ga (token ke baghair koi khud ko approve nahi kar sakta)
+             subject = "New Test User Request for Sisca AI"
+-            approve_link = f"{request.host_url}api/approve-test-user?email={user_email}"
+-            body = f"A user has requested integration access:\n\nEmail: {user_email}\n\nClick the link below to INSTANTLY APPROVE this user:\n{approve_link}"
++            token = approval_serializer.dumps(user_email)
++            approve_link = f"{request.host_url}api/approve-test-user?token={token}"
++            body = f"A user has requested integration access:\n\nEmail: {user_email}\n\nClick the link below to APPROVE this user (valid for 7 days):\n{approve_link}"
+         else:
+             subject = "New Feedback from Sisca AI User"
+             body = f"User has submitted the following feedback:\n\n{feedback_text}"
+-        
++
+         result = send_system_email("no-reply@siscaai.online", subject, body)
+ 
+         if "failed" in result.lower():
+-             return jsonify({"error": result}), 500
++            return jsonify({"error": "Could not send your request. Please try again later."}), 500
+ 
+         return jsonify({"success": True, "message": "Request processed successfully."})
+-        
++
+     except Exception as e:
+-        return jsonify({"error": str(e)}), 500
++        print(f"Feedback error: {e}")
++        return jsonify({"error": "Could not process your request. Please try again."}), 500
+ 
+ 
+-# --- NAYA ROUTE: Jab Admin Email me link par click karega ---
++# --- Admin Email me link par click karne par (signed token zaroori) ---
+ @app.route("/api/approve-test-user", methods=["GET"])
+ def approve_test_user():
+-    email = request.args.get("email")
+-    if not email:
+-        return "Error: Email is required."
+-        
++    token = request.args.get("token", "")
++    try:
++        email = approval_serializer.loads(token, max_age=7 * 24 * 3600)
++    except SignatureExpired:
++        return "This approval link has expired. Ask the user to send a new request.", 400
++    except BadSignature:
++        return "Invalid approval link.", 400
++
+     try:
+         # Status ko '2' (Approved) kar dega
+         conn = get_db_connection()
+@@ -1102,35 +1299,36 @@ def approve_test_user():
+         c.execute("UPDATE users SET test_status = 2 WHERE email = %s", (email,))
+         conn.commit()
+         conn.close()
+-        return f"<h1 style='color: green; font-family: sans-serif; text-align: center; margin-top: 50px;'>Success!</h1><p style='text-align: center; font-family: sans-serif;'><b>{email}</b> has been successfully APPROVED as a Test User.<br>They can now connect their Gmail.</p>"
++        return f"<h1 style='color: green; font-family: sans-serif; text-align: center; margin-top: 50px;'>Success!</h1><p style='text-align: center; font-family: sans-serif;'><b>{escape(email)}</b> has been successfully APPROVED as a Test User.<br>They can now connect their Gmail.</p>"
+     except Exception as e:
+-        return f"Error: {e}"
++        print(f"Approve error: {e}")
++        return "Something went wrong while approving this user.", 500
+ 
+-# --- NAYA ROUTE: Frontend live status check karega ---
++# --- Frontend live status check karega (identity session se) ---
+ 
+ @app.route("/api/check-status", methods=["POST"])
+ def check_status():
+-    data = request.get_json() or {}
+-    email = data.get("email")
+-    if not email: return jsonify({"test_status": 0, "gmail_connected": False})
+-        
++    email = current_user_email()
++    if not email:
++        return jsonify({"test_status": 0, "gmail_connected": False, "logged_in": False})
++
+     try:
+         conn = get_db_connection()
+         c = conn.cursor()
+-        # NAYA: Ab yeh Test status ke sath 'google_token' bhi Database se nikalega
+         c.execute("SELECT test_status, google_token FROM users WHERE email = %s", (email,))
+         row = c.fetchone()
+         conn.close()
+-        
++
+         if row:
+             test_status = row[0] if row[0] else 0
+-            has_token = bool(row[1]) # Agar token DB mein hua toh True bhej dega
+-            return jsonify({"test_status": test_status, "gmail_connected": has_token})
+-            
+-        return jsonify({"test_status": 0, "gmail_connected": False})  
+-    
++            has_token = bool(row[1])
++            return jsonify({"test_status": test_status, "gmail_connected": has_token, "logged_in": True})
++
++        return jsonify({"test_status": 0, "gmail_connected": False, "logged_in": True})
++
+     except Exception as e:
+-            return f"Agent Runtime Error: {str(e)}"  
++        print(f"Check-status error: {e}")
++        return jsonify({"error": "Could not check status."}), 500
+ 
+ @app.route("/")
+ def index():
+@@ -1144,54 +1342,64 @@ def auth_page():
+ # FORGOT PASSWORD ROUTES
+ # ===============================
+ @app.route("/api/forgot-otp", methods=["POST"])
++@rate_limit(5, 3600)
+ def forgot_otp():
+-    data = request.get_json()
+-    email = data.get("email", "").strip()
+-    
++    data = request.get_json(silent=True) or {}
++    email = str(data.get("email", "")).strip()
++
+     if not email:
+         return jsonify({"error": "Email is required!"}), 400
++    if not valid_email(email):
++        return jsonify({"error": "Please enter a valid email address."}), 400
+ 
+-    # Check karein ke email pehle se registered hai ya nahi
+-    conn = get_db_connection()
+-    c = conn.cursor()
+-    c.execute("SELECT email FROM users WHERE email = %s", (email,))
+-    if not c.fetchone():
++    # Same jawab chahe email registered ho ya nahi (taake koi emails ki list na nikal sake)
++    generic_ok = jsonify({"success": True, "message": "If this email is registered, a reset code has been sent."})
++
++    try:
++        conn = get_db_connection()
++        c = conn.cursor()
++        c.execute("SELECT email FROM users WHERE email = %s", (email,))
++        exists = c.fetchone()
+         conn.close()
+-        return jsonify({"error": "This email is not registered with Sisca AI!"}), 400
+-    conn.close()
++    except Exception as e:
++        print(f"forgot-otp DB error: {e}")
++        return jsonify({"error": "Something went wrong. Please try again."}), 500
+ 
+-    # 6-digit random code generate karein
+-    otp = str(random.randint(100000, 999999))
+-    pending_otps[email] = otp 
++    if not exists:
++        return generic_ok
++
++    otp = issue_otp("reset", email)
++    if otp is None:   # 60 sec cooldown ke andar dobara request
++        return generic_ok
+ 
+     subject = "Sisca AI - Password Reset Code"
+-    body = f"We received a request to reset your password.\n\nYour 6-digit reset code is: {otp}\n\nIf you didn't request this, please ignore this email."
+-    
+-    # Aapka system email function
++    body = f"We received a request to reset your password.\n\nYour 6-digit reset code is: {otp}\n\nThis code expires in 10 minutes. If you didn't request this, please ignore this email."
++
+     result = send_system_email(email, subject, body)
+ 
+     if "failed" in result.lower():
+-        return jsonify({"error": "Failed to send email. Check your internet or email settings."}), 500
+-        
+-    return jsonify({"success": True, "message": "Password reset code sent to your email!"})
++        return jsonify({"error": "Failed to send email. Please try again later."}), 500
++
++    return generic_ok
+ 
+ 
+ @app.route("/api/reset-password", methods=["POST"])
++@rate_limit(10, 3600)
+ def reset_password():
+-    data = request.get_json()
+-    email = data.get("email", "").strip()
+-    otp = data.get("otp", "").strip()
+-    new_password = data.get("new_password", "")
++    data = request.get_json(silent=True) or {}
++    email = str(data.get("email", "")).strip()
++    otp = str(data.get("otp", "")).strip()
++    new_password = str(data.get("new_password", ""))
+ 
+     if not email or not otp or not new_password:
+         return jsonify({"error": "All fields are required!"}), 400
+ 
+-    if pending_otps.get(email) != otp:
++    if not check_otp("reset", email, otp):
+         return jsonify({"error": "Invalid or expired Reset Code!"}), 400
+ 
+-    # Password Validation
+-    if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$', new_password):
+-        return jsonify({"error": "Password must contain at least one uppercase, lowercase, and a number."}), 400
++    pw_err = password_error(new_password)
++    if pw_err:
++        return jsonify({"error": pw_err}), 400
+ 
+     hashed_pw = generate_password_hash(new_password)
+ 
+@@ -1201,125 +1409,155 @@ def reset_password():
+         c.execute("UPDATE users SET password = %s WHERE email = %s", (hashed_pw, email))
+         conn.commit()
+         conn.close()
+-        
+-        # Reset kamyab hone par OTP memory se delete kar dein
+-        if email in pending_otps:
+-            del pending_otps[email] 
+-        
++
++        # Reset kamyab hone par OTP delete kar dein
++        clear_otp("reset", email)
++
+         return jsonify({"success": True, "message": "Password changed successfully! You can now login."})
+     except Exception as e:
+-        return jsonify({"error": str(e)}), 500
++        print(f"reset-password error: {e}")
++        return jsonify({"error": "Something went wrong. Please try again."}), 500
+ 
+ @app.route("/api/clear-chat", methods=["POST"])
+ def clear_chat_history():
+-    data = request.get_json() or {}
+-    user_email = data.get("user_email") or "guest"
+-    
+-    # Sirf us specific user ki chat clear hogi
+-    if user_email in chat_histories:
+-        chat_histories[user_email] = []  
+-        
++    # Sirf us specific user (ya us guest session) ki chat clear hogi
++    key = history_key_for(current_user_email() or "guest")
++    if key in chat_histories:
++        chat_histories[key] = []
++
+     return jsonify({"success": True, "message": "Chat memory cleared."})
+ 
+ @app.route("/api/send-otp", methods=["POST"])
++@rate_limit(5, 3600)
+ def send_otp():
+-    data = request.get_json()
+-    email = data.get("email", "").strip()
+-    
++    data = request.get_json(silent=True) or {}
++    email = str(data.get("email", "")).strip()
++
+     if not email:
+         return jsonify({"error": "Email is required to send OTP!"}), 400
++    if not valid_email(email):
++        return jsonify({"error": "Please enter a valid email address."}), 400
+ 
+     # Check karein ke email pehle se registered to nahi
+-    conn = get_db_connection()
+-    c = conn.cursor()
+-    c.execute("SELECT email FROM users WHERE email = %s", (email,))
+-    if c.fetchone():
++    try:
++        conn = get_db_connection()
++        c = conn.cursor()
++        c.execute("SELECT email FROM users WHERE email = %s", (email,))
++        already = c.fetchone()
+         conn.close()
++    except Exception as e:
++        print(f"send-otp DB error: {e}")
++        return jsonify({"error": "Something went wrong. Please try again."}), 500
++
++    if already:
+         return jsonify({"error": "Email is already registered! Please login."}), 400
+-    conn.close()
+ 
+-    # 6-digit random code generate karein
+-    otp = str(random.randint(100000, 999999))
+-    pending_otps[email] = otp # Code memory me save kar liya
++    otp = issue_otp("signup", email)
++    if otp is None:
++        return jsonify({"error": "Please wait a minute before requesting another code."}), 429
+ 
+     subject = "Sisca AI - Verification Code"
+-    body = f"Welcome to Sisca AI!\n\nYour 6-digit verification code is: {otp}\n\nPlease enter this code to complete your registration."
+-    
+-    # Aapka pehle se bana hua function email bhej dega
++    body = f"Welcome to Sisca AI!\n\nYour 6-digit verification code is: {otp}\n\nThis code expires in 10 minutes. Please enter it to complete your registration."
++
+     result = send_system_email(email, subject, body)
+ 
+     if "failed" in result.lower():
+-        return jsonify({"error": "Failed to send email. Check your internet or email settings."}), 500
+-        
++        return jsonify({"error": "Failed to send email. Please try again later."}), 500
++
+     return jsonify({"success": True, "message": "Verification code sent to your email!"})
+ 
+ @app.route("/api/signup", methods=["POST"])
++@rate_limit(10, 3600)
+ def signup():
+-    data = request.get_json()
+-    first_name = data.get("first_name", "").strip()
+-    last_name = data.get("last_name", "").strip()
+-    email = data.get("email", "").strip()
+-    password = data.get("password", "")
+-    otp = data.get("otp", "").strip() # NAYA: Frontend se OTP aayega
++    data = request.get_json(silent=True) or {}
++    first_name = str(data.get("first_name", "")).strip()
++    last_name = str(data.get("last_name", "")).strip()
++    email = str(data.get("email", "")).strip()
++    password = str(data.get("password", ""))
++    otp = str(data.get("otp", "")).strip()
+ 
+     if not first_name or not last_name or not email or not password or not otp:
+         return jsonify({"error": "All fields including OTP are required!"}), 400
++    if len(first_name) > 50 or len(last_name) > 50:
++        return jsonify({"error": "Name is too long."}), 400
++    if not valid_email(email):
++        return jsonify({"error": "Please enter a valid email address."}), 400
+ 
+-    # NAYA: OTP Verification Check
+-    if pending_otps.get(email) != otp:
++    # OTP Verification Check
++    if not check_otp("signup", email, otp):
+         return jsonify({"error": "Invalid or expired Verification Code!"}), 400
+ 
+-    # Password Validation
+-    if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$', password):
+-        return jsonify({"error": "Password must contain at least one uppercase, lowercase, and a number."}), 400
++    pw_err = password_error(password)
++    if pw_err:
++        return jsonify({"error": pw_err}), 400
+ 
+     hashed_pw = generate_password_hash(password)
+ 
+     try:
+         conn = get_db_connection()
+         c = conn.cursor()
+-        c.execute("INSERT INTO users (first_name, last_name, email, password) VALUES (%s, %s, %s, %s)", 
++        c.execute("INSERT INTO users (first_name, last_name, email, password) VALUES (%s, %s, %s, %s)",
+                   (first_name, last_name, email, hashed_pw))
+         conn.commit()
+         conn.close()
+-        
+-        # Signup kamyab hone par OTP memory se delete kar dein
+-        del pending_otps[email] 
+-        
++
++        clear_otp("signup", email)
++
+         return jsonify({"success": True, "message": "Account created successfully! Please login."})
+     except psycopg2.IntegrityError:
+         return jsonify({"error": "Email already registered."}), 400
+     except Exception as e:
+-        return jsonify({"error": str(e)}), 500
+-    
+-    
++        print(f"signup error: {e}")
++        return jsonify({"error": "Something went wrong. Please try again."}), 500
++
++
+ @app.route("/api/login", methods=["POST"])
++@rate_limit(30, 900)
+ def login():
+-    data = request.get_json()
+-    email = data.get("email", "").strip() 
+-    password = data.get("password", "").strip()
++    data = request.get_json(silent=True) or {}
++    email = str(data.get("email", "")).strip()
++    password = str(data.get("password", "")).strip()
+ 
+-    conn = get_db_connection()
+-    c = conn.cursor()
+-    # NAYA: ab hum database se 'google_token' bhi nikal rahe hain
+-    c.execute("SELECT first_name, last_name, password, google_token FROM users WHERE email = %s", (email,))
+-    user = c.fetchone()
+-    conn.close()
++    # Ek hi email par brute-force rokne ke liye: 15 minute me max 8 koshishein
++    allowed, _ = _hit(("login-email", email.lower()), 8, 900)
++    if not allowed:
++        return jsonify({"error": "Too many login attempts. Please try again in a few minutes."}), 429
++
++    try:
++        conn = get_db_connection()
++        c = conn.cursor()
++        c.execute("SELECT first_name, last_name, password, google_token FROM users WHERE email = %s", (email,))
++        user = c.fetchone()
++        conn.close()
++    except Exception as e:
++        print(f"login DB error: {e}")
++        return jsonify({"error": "Something went wrong. Please try again."}), 500
+ 
+     if user and check_password_hash(user[2], password):
+-        # Check karein ke user ke paas google token hai ya nahi (True/False)
+-        has_token = bool(user[3]) 
+-        
++        has_token = bool(user[3])
++
++        # SERVER-SIDE LOGIN: ab identity cookie-session me hai (sirf localStorage par nahi)
++        session.clear()
++        session["user_email"] = email
++        session.permanent = True
++
+         return jsonify({
+-            "success": True, 
++            "success": True,
+             "first_name": user[0],
+-            "last_name": user[1],  
++            "last_name": user[1],
+             "email": email,
+-            "gmail_connected": has_token 
++            "gmail_connected": has_token
+         })
+     else:
+         return jsonify({"error": "Invalid email or password!"}), 401
+ 
++
++@app.route("/api/logout", methods=["POST"])
++def logout():
++    session.clear()
++    return jsonify({"success": True})
++
++
+ # ===============================
+ # TEXT TO SPEECH (TTS) ENGINE
+ # ===============================
+@@ -1389,10 +1627,15 @@ def consume_usage(key, field, limit):
+ @app.route("/api/chat", methods=["POST"])
+ def chat():
+     data = request.get_json() or {}
+-    user_message = data.get("message", "").strip()
++    user_message = str(data.get("message", "")).strip()[:8000]
+     image_base64 = data.get("image", None)
+     data_file = data.get("data_file", None)
+-    user_email = data.get("user_email") or "guest"
++    if data_file:
++        # Path traversal se bachao: sirf uploads folder ki asli file allow
++        data_file = secure_filename(str(data_file))
++        if not data_file or not os.path.isfile(os.path.join(UPLOADS_DIR, data_file)):
++            data_file = None
++    user_email = current_user_email() or "guest"   # server-side session (client email ignore)
+     
+     is_voice = data.get("isVoice", False)      
+     is_agent_active = data.get("is_agent_active", False)
+@@ -1407,7 +1650,7 @@ def chat():
+ 
+     if user_email == "guest":
+         # --- GUEST LIMITS ---
+-        guest_key = "ip:" + str(request.remote_addr)
++        guest_key = "ip:" + client_ip()
+ 
+         # Check Agent Limit for Guest (Max 3)
+         if is_agent_active:
+@@ -1448,6 +1691,7 @@ def chat():
+     return jsonify(response)
+ 
+ @app.route("/api/stop-agent", methods=["POST"])
++@rate_limit(30, 60)
+ def stop_agent():
+     print("System Notification: Signal received to forcefully terminate agent process.")
+     try:
+@@ -1464,8 +1708,10 @@ def stop_agent():
+         return jsonify({"success": True, "message": "Agent and Browser processes successfully terminated."}), 200
+     except Exception as e:
+         print(f"Error terminating agent process: {e}")
+-        return jsonify({"success": False, "message": "Failed to terminate agent process.", "error": str(e)}), 500
++        return jsonify({"success": False, "message": "Failed to terminate agent process."}), 500
+ 
+ if __name__ == '__main__':
+-    app.run(debug=True, port=5000, host='0.0.0.0')
++    _debug = os.environ.get("FLASK_DEBUG", "0") == "1"
++    # Debug mode me Werkzeug debugger remote code execution deta hai, is liye sirf localhost par.
++    app.run(debug=_debug, port=int(os.environ.get("PORT", 5000)), host='127.0.0.1' if _debug else '0.0.0.0')
+ 
+diff --git a/start.sh b/start.sh
+index 047d2d8..98f10f6 100644
+--- a/start.sh
++++ b/start.sh
+@@ -9,7 +9,7 @@ fluxbox &
+ sleep 1
+ 
+ # 3. Start VNC Server (Captures the screen)
+-x11vnc -display :99 -nopw -forever -shared -bg
++x11vnc -display :99 -nopw -forever -shared -bg -localhost
+ 
+ # 4. Start noVNC (Converts VNC to WebSockets for your frontend)
+ echo "Starting noVNC Stream on port 6080..."
+diff --git a/templates/index.html b/templates/index.html
+index 5627a25..cbac490 100644
+--- a/templates/index.html
++++ b/templates/index.html
+@@ -437,7 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
+             // Agar message me emoji ho to usay clean kar dega
+             let cleanMessage = message.replace('⚠️ ', '');
+ 
+-            toast.innerHTML = `<i class="${iconClass}"></i> <span>${cleanMessage}</span>`;
++            toast.innerHTML = `<i class="${iconClass}"></i> <span></span>`;
++            toast.querySelector('span').textContent = cleanMessage;
+             container.appendChild(toast);
+ 
+             // 4 seconds ke baad slide-out karke remove ho jayega
+@@ -537,9 +538,16 @@ window.addEventListener('DOMContentLoaded', async () => {
+             const response = await fetch('/api/check-status', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+-                body: JSON.stringify({ email: user.email })
++                body: JSON.stringify({})
+             });
+             const data = await response.json();
++
++            // Server session nahi hai (purana/fake localStorage login) -> local login hata do
++            if (data.logged_in === false) {
++                localStorage.removeItem('sisca_user');
++                location.reload();
++                return;
++            }
+             
+             // Agar database ne confirm kar diya ke token mojood hai, to button ko Connected kar do
+             if (data.gmail_connected && gmailBtn) {
+@@ -586,6 +594,9 @@ async function handleLogout() {
+         console.log("Pending request aborted due to logout.");
+     }
+ 
++    // Server-side session khatam karein
++    try { await fetch('/api/logout', { method: 'POST' }); } catch (e) {}
++
+     // Frontend se user ka data hata rahe hain
+     localStorage.removeItem('sisca_user');
+ 
+@@ -1071,9 +1082,16 @@ const chatForm = document.getElementById('chatForm');
+             if (recognition) recognition.stop();
+         }
+ 
++        // SECURITY: model/web/user text ko pehle escape karte hain taake koi HTML/script chal na sake
++        function escapeHtml(t) {
++            return String(t)
++                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
++                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
++        }
++
+         function formatText(text) {
+             if (!text) return "";
+-            return text
++            return escapeHtml(text)
+                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                 .replace(/\n/g, '<br>');
+         }
+@@ -1421,7 +1439,7 @@ const chatForm = document.getElementById('chatForm');
+                 // ---------------------------------------------------------------
+ 
+                 if (error.name === 'AbortError') {
+-                    await addMessage("<em>You've stopped this response!</em>", "assistant", false);
++                    await addMessage("You've stopped this response!", "assistant", false);
+                 } else {
+                     await addMessage('An error occurred connecting to the server.', 'assistant', false);
+                 }

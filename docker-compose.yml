@@ -4,8 +4,9 @@ services:
     container_name: sisca_agent_sandbox
     restart: unless-stopped
     ports:
-      # Expose noVNC port to host machine
-      - "6080:6080"
+      # SECURITY: noVNC (bina password) default me sirf localhost par. Remote server par
+      # VNC_BIND=0.0.0.0 tabhi karein jab firewall / authenticated reverse-proxy lagi ho.
+      - "${VNC_BIND:-127.0.0.1}:6080:6080"
     shm_size: '2gb'
     # --- NAYA: Bypass Docker Security for Chromium Sandbox ---
     cap_add:

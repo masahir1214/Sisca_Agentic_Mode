@@ -9,7 +9,7 @@ fluxbox &
 sleep 1
 
 # 3. Start VNC Server (Captures the screen)
-x11vnc -display :99 -nopw -forever -shared -bg
+x11vnc -display :99 -nopw -forever -shared -bg -localhost
 
 # 4. Start noVNC (Converts VNC to WebSockets for your frontend)
 echo "Starting noVNC Stream on port 6080..."
