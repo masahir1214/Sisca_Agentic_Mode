@@ -109,7 +109,7 @@
         <!-- Brand / Logo Area -->
         <div class="brand-wrapper" id="brandWrapper" style="margin-bottom: 2rem;">
             <img src="/static/sisca_logo.svg" alt="Sisca AI Logo" class="brand-logo" draggable="true" style="width: 100px; height: 100px;">
-            <h2 style="color: var(--text-dark); font-size: 2.8rem;">Sisca AI</h2>
+            <h2 style="color: var(--text-dark); font-size: 2rem;", id="sisca-greeting"></h2>
         </div>
 
         <!-- Chat Area (Restricted Size) -->
@@ -925,6 +925,9 @@ async function submitLogin() {
                     last_name: data.last_name,
                     email: data.email
                 }));
+
+                localStorage.setItem("first_name", data.first_name);
+
                 window.location.href = '/'; 
             }
         }
@@ -1777,6 +1780,43 @@ if (downloadPdfBtn) {
     });
 }
 
-    </script>
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    let firstName = null;
+    
+    // Direct main 'sisca_user' object se naam nikal rahe hain
+    const savedUserStr = localStorage.getItem('sisca_user');
+    if (savedUserStr) {
+        try {
+            const userObj = JSON.parse(savedUserStr);
+            firstName = userObj.first_name;
+        } catch (e) {
+            console.error("Error fetching user data", e);
+        }
+    }
+
+    const greetings = [
+        "Welcome to Sisca",
+        "Hello",
+        "Good to see you",
+        "Greetings",
+        "Welcome back",
+        "How's your day going"
+    ];
+    
+    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+    const greetingElement = document.getElementById("sisca-greeting");
+    
+    if (greetingElement) {
+        if (firstName && firstName !== "null") {
+            greetingElement.innerText = `${randomGreeting}, ${firstName}`;
+        } else {
+            greetingElement.innerText = `Welcome to Sisca AI`;
+        }
+    }
+});
+</script>
+
 </body>
 </html>
